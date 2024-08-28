@@ -38,6 +38,7 @@ else
 
   # Install and enable scs module
   git clone --branch 1.x https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /var/www/html/modules/custom/soda_scs_manager
+  git config --global --add safe.directory /opt/drupal/web/modules/custom/soda_scs_manager
   drush en soda_scs_manager -y
 fi
 
