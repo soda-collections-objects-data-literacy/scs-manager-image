@@ -34,7 +34,7 @@ else
 
   # Install development modules
   composer require drupal/devel kint-php/kint drupal/entity
-  drush en devel -y
+  drush en devel entity -y
 
   # Install and enable scs module
   git clone --branch main https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /var/www/html/modules/custom/soda_scs_manager
