@@ -33,7 +33,7 @@ else
     --account-pass="${DRUPAL_PASSWORD}"
 
   # Install development modules
-  composer require drupal/devel kint-php/kint
+  composer require drupal/devel kint-php/kint drupal/entity
   drush en devel -y
 
   # Install and enable scs module
