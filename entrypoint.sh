@@ -22,6 +22,10 @@ if drush status | grep -q "Drupal bootstrap.*Successful"; then
 
   # Clear cache
   drush cr
+
+  # DB Update
+  drush updatedb -y
+
 else
   echo "Installing Drupal site..."
 
@@ -33,8 +37,8 @@ else
     --account-pass="${DRUPAL_PASSWORD}"
 
   # Install development modules
-  composer require drupal/devel kint-php/kint drupal/entity
-  drush en devel entity -y
+  composer require 'drupal/devel' 'kint-php/kint' 'drupal/openid_connect:^3.0@alpha' 'drupal/entity_update:^3.0' 'drupal/health_check:^3.1'
+  drush en devel openid_connect entity_update health_check -y
 
   # Install and enable scs module
   git clone --branch main https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /var/www/html/modules/custom/soda_scs_manager
