@@ -7,7 +7,7 @@ until mysql -h ${DB_HOST} -u"${DB_USER}" -p"${DB_PASSWORD}" -e "SHOW DATABASES;"
 done
 
 # Check if the site is already installed
-if drush status | grep -q "Drupal bootstrap.*Successful"; then
+if [ -f /opt/drupal/web/sites/default/settings.php ]; then
   echo "Drupal site is already installed. Updating packages and fetching new git repository..."
 
   # Trust the git
