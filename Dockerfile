@@ -67,6 +67,7 @@ RUN { \
     echo 'opcache.interned_strings_buffer=8'; \
     echo 'opcache.max_accelerated_files=4000'; \
     echo 'opcache.revalidate_freq=0'; \
+    echo 'opcache.revalidate_freq=0'; \
     echo 'opcache.fast_shutdown=1'; \
     } >> /usr/local/etc/php/conf.d/zz-opcache-recommended.ini;
 
