@@ -26,11 +26,14 @@ if [ -f /opt/drupal/web/sites/default/settings.php ]; then
   # Clear cache
   drush cr
 
-  # Entity Update
-  drush entup -y
-
   # DB Update
   drush updatedb -y
+
+  # Clear cache
+  drush cr
+
+  # Entity Update
+  drush upe --all -y
 
   # Clear cache
   drush cr
