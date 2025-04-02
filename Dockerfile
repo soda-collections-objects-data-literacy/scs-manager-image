@@ -36,6 +36,16 @@ RUN { \
     echo "apc.shm_size=32M"; \
     } >> /usr/local/etc/php/conf.d/zz-apcu-custom.ini;
 
+# Install xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+RUN { \
+    echo 'xdebug.mode=debug,develop'; \
+    echo 'xdebug.client_host=host.docker.internal'; \
+    echo 'xdebug.start_with_request=yes'; \
+    echo 'error_reporting=E_ALL'; \
+    } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;
+
 # Set memory settings for SCS Manager
 RUN { \
     echo 'max_execution_time = 1200'; \
@@ -56,7 +66,7 @@ RUN { \
     echo 'opcache.memory_consumption=128'; \
     echo 'opcache.interned_strings_buffer=8'; \
     echo 'opcache.max_accelerated_files=4000'; \
-    echo 'opcache.revalidate_freq=2'; \
+    echo 'opcache.revalidate_freq=0'; \
     echo 'opcache.fast_shutdown=1'; \
     } >> /usr/local/etc/php/conf.d/zz-opcache-recommended.ini;
 
