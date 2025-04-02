@@ -44,7 +44,6 @@ RUN { \
     echo 'upload_max_filesize = 1024M'; \
     echo 'max_file_uploads = 50'; \
     echo 'post_max_size = 1024M'; \
-    echo 'assert.active = 0'; \
     } >> /usr/local/etc/php/conf.d/zz-scs-manager-recommended.ini;
 
 # Enable output buffering
