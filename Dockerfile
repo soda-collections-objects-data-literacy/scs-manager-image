@@ -43,6 +43,8 @@ RUN { \
     echo 'xdebug.mode=debug,develop'; \
     echo 'xdebug.client_host=host.docker.internal'; \
     echo 'xdebug.start_with_request=yes'; \
+    echo 'xdebug.client_port=9003'; \
+    echo 'xdebug.log=/var/log/xdebug.log'; \
     echo 'error_reporting=E_ALL'; \
     } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;
 
