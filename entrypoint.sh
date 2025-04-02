@@ -14,6 +14,9 @@ if [ -f /opt/drupal/web/sites/default/settings.php ]; then
   git config --global --add safe.directory /var/www/html/modules/custom/soda_scs_manager
 
   # Update packages
+  # Require development modules without installing them
+  composer clear-cache
+  composer require 'drupal/devel:^5.3' 'kint-php/kint:^6.0' 'drupal/openid_connect:^3.0@alpha' 'drupal/entity_update:^3.0' 'drupal/health_check:^3.1' --no-update
   composer update
 
   # Fetch the new git repository
@@ -37,10 +40,12 @@ else
     --account-pass="${DRUPAL_PASSWORD}"
 
   # Install development modules
-  composer require 'drupal/devel' 'kint-php/kint' 'drupal/openid_connect:^3.0@alpha' 'drupal/entity_update:^3.0' 'drupal/health_check:^3.1'
+
+  composer require 'drupal/devel:^5.3' 'kint-php/kint:^6.0' 'drupal/openid_connect:^3.0@alpha' 'drupal/entity_update:^3.0' 'drupal/health_check:^3.1'
   drush en devel openid_connect entity_update health_check -y
 
   # Install and enable scs module
+
   git clone --branch main https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /var/www/html/modules/custom/soda_scs_manager
   git config --global --add safe.directory /opt/drupal/web/modules/custom/soda_scs_manager
   drush en soda_scs_manager -y
