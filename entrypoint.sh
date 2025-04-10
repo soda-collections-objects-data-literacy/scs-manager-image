@@ -16,7 +16,14 @@ if [ -f /opt/drupal/web/sites/default/settings.php ]; then
   # Update packages
   # Require development modules without installing them
   composer clear-cache
-  composer require 'drupal/devel:^5.3' 'kint-php/kint:^6.0' 'drupal/openid_connect:^3.0@alpha' 'drupal/entity_update:^3.0' 'drupal/health_check:^3.1' --no-update
+  composer require \
+    'drupal/devel:^5.3' \
+    'kint-php/kint:^6.0' \
+    'drupal/openid_connect:^3.0@alpha' \
+    'drupal/entity_update:^3.0' \
+    'drupal/health_check:^3.1' \
+    'drupal/bootstrap5:^4.0' \
+    --no-update
   composer update
 
   # Fetch the new git repository
@@ -50,7 +57,14 @@ else
 
   # Install development modules
 
-  composer require 'drupal/devel:^5.3' 'kint-php/kint:^6.0' 'drupal/openid_connect:^3.0@alpha' 'drupal/entity_update:^3.0' 'drupal/health_check:^3.1'
+  composer require \
+    'drupal/devel:^5.3' \
+    'kint-php/kint:^6.0' \
+    'drupal/openid_connect:^3.0@alpha' \
+    'drupal/entity_update:^3.0' \
+    'drupal/health_check:^3.1' \
+    'drupal/bootstrap5:^4.0' \
+    --no-update
   drush en devel openid_connect entity_update health_check -y
 
   # Install and enable scs module
