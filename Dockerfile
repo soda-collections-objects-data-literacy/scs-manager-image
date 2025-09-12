@@ -42,12 +42,14 @@ RUN pecl install xdebug && docker-php-ext-enable xdebug
 # Create xdebug log directory
 # @todo: This is a hack to get around the fact that the xdebug log directory is not writable by the www-data user. CHANGE ME IN FUTURE
 RUN mkdir -p /var/log/xdebug
-RUN chmod 777 /var/log/xdebug
+RUN chown www-data:www-data /var/log/xdebug
+RUN chmod 775 /var/log/xdebug
 
 RUN { \
     echo 'xdebug.mode=debug,develop'; \
     echo 'xdebug.client_host=host.docker.internal'; \
-    echo 'xdebug.start_with_request=yes'; \
+    echo 'xdebug.start_with_request=trigger'; \
+    echo 'xdebug.trigger_value=scs'; \
     echo 'xdebug.client_port=9003'; \
     echo 'xdebug.log=/var/log/xdebug/xdebug.log'; \
     echo 'error_reporting=E_ALL'; \
