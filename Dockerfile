@@ -1,4 +1,4 @@
-FROM drupal:11.1.4-php8.3-apache-bookworm
+FROM drupal:11.2.4-php8.3-apache-bookworm
 
 LABEL org.opencontainers.image.source=https://github.com/soda-collections-objects-data-literacy/scs-manager-image.git
 LABEL org.opencontainers.image.description "Plain Drupal with preinstalled Site and SODa SCS Manager."
@@ -9,6 +9,10 @@ RUN apt-get update; \
     apt-get install -y --no-install-recommends \
     default-mysql-client \
     git \
+    libaom3 \
+    libavif-dev \
+    libavif15 \
+    libdav1d6 \
     libgmp-dev \
     unzip \
     vim \
@@ -23,6 +27,14 @@ rm -rf /usr/src/php/ext/uploadprogress;
 
 # GMP
 RUN docker-php-ext-install gmp
+
+# Configure and install GD extension with AVIF support
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp \
+    --with-avif \
+    && docker-php-ext-install -j$(nproc) gd
 
 # Install apcu
 RUN set -eux; \
