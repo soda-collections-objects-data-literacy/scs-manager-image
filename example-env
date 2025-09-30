@@ -1,0 +1,12 @@
+# Database configuration
+DB_DRIVER=mysql
+DB_HOST=mariadb
+DB_NAME=drupal
+DB_PASSWORD=your_database_password
+DB_PORT=3306
+DB_USER=drupal
+
+# Drupal site configuration
+DRUPAL_SITE_NAME=SCS Manager
+DRUPAL_USER=admin
+DRUPAL_PASSWORD=your_admin_password

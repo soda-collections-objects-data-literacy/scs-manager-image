@@ -58,12 +58,31 @@ else
   # Install development modules
 
   composer require \
-    'drupal/devel:^5.3' \
-    'kint-php/kint:^6.0' \
-    'drupal/openid_connect:^3.0@alpha' \
-    'drupal/entity_update:^3.0' \
-    'drupal/health_check:^3.1' \
+    'drupal/book_tree_menu:^3.0' \
+    'drupal/book':^2.0' \
     'drupal/bootstrap5:^4.0' \
+    'drupal/ckeditor_font:^2.0@beta' \
+    'drupal/content_entity_sync:^2.3' \
+    'drupal/core-composer-scaffold:^11.1' \
+    'drupal/core-project-message:^11.1' \
+    'drupal/core-recommended:^11.1' \
+    'drupal/custom_book_block:^2.0' \
+    'drupal/devel:^5.3' \
+    'drupal/entity_update:^3.0' \
+    'drupal/field_group:^4.0' \
+    'drupal/gin:^5.0' \
+    'drupal/health_check:^3.1' \
+    'drupal/imce:^3.1' \
+    'drupal/linkit:^7.0' \
+    'drupal/openid_connect:^3.0@alpha' \
+    'drupal/pathauto:^1.13' \
+    'drupal/private_files_download_permission:^3.1' \
+    'drupal/single_content_sync:^1.4' \
+    'drupal/smtp:^1.4' \
+    'drupal/svg_image:^3.2' \
+    'drupal/token:^1.16' \
+    'drush/drush:^13.5' \
+    'kint-php/kint:^6.0'
     --no-update
   drush en devel openid_connect entity_update health_check -y
 

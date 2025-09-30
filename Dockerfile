@@ -64,6 +64,9 @@ RUN { \
     echo 'xdebug.trigger_value=scs'; \
     echo 'xdebug.client_port=9003'; \
     echo 'xdebug.log=/var/log/xdebug/xdebug.log'; \
+    echo 'xdebug.log_level=7'; \
+    echo 'xdebug.idekey=scs'; \
+    echo 'xdebug.discover_client_host=1'; \
     echo 'error_reporting=E_ALL'; \
     } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;
 
