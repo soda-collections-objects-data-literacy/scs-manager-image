@@ -4,9 +4,10 @@ DB_HOST=mariadb
 DB_NAME=drupal
 DB_PASSWORD=your_database_password
 DB_PORT=3306
+DB_ROOT_PASSWORD=your_database_root_password
 DB_USER=drupal
 
 # Drupal site configuration
+DRUPAL_PASSWORD=your_admin_password
 DRUPAL_SITE_NAME=SCS Manager
 DRUPAL_USER=admin
-DRUPAL_PASSWORD=your_admin_password
