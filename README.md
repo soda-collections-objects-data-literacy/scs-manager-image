@@ -38,6 +38,7 @@ This Docker image provides a pre-configured Drupal 11 installation with the SODa
 - Docker Engine 20.10 or later
 - Docker Compose 2.0 or later (optional, but recommended)
 - MariaDB 11.5+ or MySQL 8.0+ database server
+- [SCS Manager Deployment infrastructure](https://github.com/soda-collections-objects-data-literacy/soda_scs_manager_deployment) with traefik, portainer, keycloak, opengdb, nextcloud (with openoffice), jupyterhub (with openrefine) and webprotégé.
 
 ## Quick Start
 
