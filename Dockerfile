@@ -1,7 +1,10 @@
-FROM drupal:11.2.4-php8.3-apache-bookworm
+ARG DRUPAL_IMAGE=drupal:11.3.2-php8.3-apache-bookworm
+ARG MODE=production
+
+FROM ${DRUPAL_IMAGE:-drupal:11.3.2-php8.3-apache-bookworm}
 
 LABEL org.opencontainers.image.source=https://github.com/soda-collections-objects-data-literacy/scs-manager-image.git
-LABEL org.opencontainers.image.description "Plain Drupal with preinstalled Site and SODa SCS Manager."
+LABEL org.opencontainers.image.description="Plain Drupal with preinstalled Site and SODa SCS Manager."
 
 # Install apts
 
@@ -13,7 +16,11 @@ RUN apt-get update; \
     libavif-dev \
     libavif15 \
     libdav1d6 \
+    libfreetype6-dev \
     libgmp-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
     unzip \
     vim \
     wget
@@ -48,16 +55,23 @@ RUN { \
     echo "apc.shm_size=32M"; \
     } >> /usr/local/etc/php/conf.d/zz-apcu-custom.ini;
 
-# Install xdebug
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+# Install xdebug if mode is development
+RUN if [ "$MODE" = "development" ]; then \
+    pecl install xdebug && docker-php-ext-enable xdebug; \
+    fi
 
 # Create xdebug log directory
 # @todo: This is a hack to get around the fact that the xdebug log directory is not writable by the www-data user. CHANGE ME IN FUTURE
-RUN mkdir -p /var/log/xdebug
-RUN chown www-data:www-data /var/log/xdebug
-RUN chmod 775 /var/log/xdebug
+RUN if [ "$MODE" = "development" ]; then \
+    mkdir -p /var/log/xdebug; \
+    chown www-data:www-data /var/log/xdebug; \
+    chmod 775 /var/log/xdebug; \
+    fi
 
-RUN { \
+# Add xdebug config if mode is development
+RUN if [ "$MODE" = "development" ]; then \
+    { \
     echo 'xdebug.mode=debug,develop'; \
     echo 'xdebug.client_host=host.docker.internal'; \
     echo 'xdebug.start_with_request=trigger'; \
@@ -68,7 +82,8 @@ RUN { \
     echo 'xdebug.idekey=scs'; \
     echo 'xdebug.discover_client_host=1'; \
     echo 'error_reporting=E_ALL'; \
-    } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;
+    } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;\
+    fi
 
 # Set memory settings for SCS Manager
 RUN { \
@@ -90,18 +105,65 @@ RUN { \
     echo 'opcache.memory_consumption=128'; \
     echo 'opcache.interned_strings_buffer=8'; \
     echo 'opcache.max_accelerated_files=4000'; \
-    echo 'opcache.revalidate_freq=0'; \
-    echo 'opcache.revalidate_freq=0'; \
     echo 'opcache.fast_shutdown=1'; \
     } >> /usr/local/etc/php/conf.d/zz-opcache-recommended.ini;
 
+# Add opcache config if mode is production
+RUN if [ "$MODE" = "development" ]; then \
+    { \
+    echo 'opcache.revalidate_freq=0'; \
+    } >> /usr/local/etc/php/conf.d/zz-opcache-recommended.ini;\
+    fi
 
 # Install drush
-RUN composer require drush/drush
+RUN set -eux; \
+    cd /opt/drupal && \
+    composer require \
+    'drupal/admin_toolbar:^3.6' \
+    'drupal/book:^2.0' \
+    'drupal/book_tree_menu:^3.0' \
+    'drupal/bootstrap5:^4.0' \
+    'drupal/ckeditor_font:^2.0@beta' \
+    'drupal/coder:^8.3' \
+    'drupal/content_entity_sync:^2.3' \
+    'drupal/core-composer-scaffold:^11.3' \
+    'drupal/core-project-message:^11.3' \
+    'drupal/core-recommended:^11.3' \
+    'drupal/custom_book_block:^2.0' \
+    'drupal/devel:^5.3' \
+    'drupal/entity_update:^3.0' \
+    'drupal/field_group:^4.0' \
+    'drupal/gin:^5.0' \
+    'drupal/health_check:^3.1' \
+    'drupal/imce:^3.1' \
+    'drupal/languageicons:^2.0@beta' \
+    'drupal/linkit:^7.0' \
+    'drupal/openid_connect:^3.0@alpha' \
+    'drupal/pathauto:^1.13' \
+    'drupal/private_files_download_permission:^3.1' \
+    'drupal/single_content_sync:^1.4' \
+    'drupal/smtp:^1.4' \
+    'drupal/svg_image:^3.2' \
+    'drupal/token:^1.17' \
+    'drush/drush:^13.5' \
+    'kint-php/kint:^6.0';
+
+# Actually install the packages
+RUN composer install --no-interaction
+
+# Install and enable scs module
+RUN git clone --branch main https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /opt/drupal/web/modules/custom/soda_scs_manager
+RUN git config --global --add safe.directory /opt/drupal/web/modules/custom/soda_scs_manager
 
 # add composer bin to PATH
 RUN ln -s /opt/drupal/vendor/bin/drush /usr/local/bin/drush
 
+RUN mkdir -p /opt/drupal/sync/configs
+RUN chown -R www-data:www-data /opt/drupal/sync
+
+COPY ./sync/configs/configs.tar.gz /opt/drupal/sync/configs.tar.gz
+RUN tar -xzf /opt/drupal/sync/configs.tar.gz -C /opt/drupal/sync/configs
+RUN rm /opt/drupal/sync/configs.tar.gz
 RUN chown -R www-data:www-data /var/www/html
 
 COPY entrypoint.sh /entrypoint.sh

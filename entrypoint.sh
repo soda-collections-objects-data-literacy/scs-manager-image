@@ -1,53 +1,16 @@
 #!/bin/bash
 # Install the Drupal site with SCS Manager
 
+NEW_SITE=false
+
 until mysql -h ${DB_HOST} -u"${DB_USER}" -p"${DB_PASSWORD}" -e "SHOW DATABASES;" > /dev/null 2>&1; do
   echo "Waiting for MariaDB to be ready..."
   sleep 5
 done
 
 # Check if the site is already installed
-if [ -f /opt/drupal/web/sites/default/settings.php ]; then
-  echo "Drupal site is already installed. Updating packages and fetching new git repository..."
-
-  # Trust the git
-  git config --global --add safe.directory /var/www/html/modules/custom/soda_scs_manager
-
-  # Update packages
-  # Require development modules without installing them
-  composer clear-cache
-  composer require \
-    'drupal/devel:^5.3' \
-    'kint-php/kint:^6.0' \
-    'drupal/openid_connect:^3.0@alpha' \
-    'drupal/entity_update:^3.0' \
-    'drupal/health_check:^3.1' \
-    'drupal/bootstrap5:^4.0' \
-    --no-update
-  composer update
-
-  # Fetch the new git repository
-  cd /var/www/html/modules/custom/soda_scs_manager
-  git pull origin main
-
-  # Clear cache
-  drush cr
-
-  # DB Update
-  drush updatedb -y
-
-  # Clear cache
-  drush cr
-
-  # Entity Update
-  drush upe --all -y
-
-  # Clear cache
-  drush cr
-
-else
+if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
   echo "Installing Drupal site..."
-
   # Install the site
   drush si \
     --db-url="${DB_DRIVER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
@@ -55,47 +18,38 @@ else
     --account-name="${DRUPAL_USER}" \
     --account-pass="${DRUPAL_PASSWORD}"
 
-  # Install development modules
+  # Enable modules
+  drush en admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block devel entity_update field_group health_check imce language languageicons linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token -y
+  # Enable theme and set admin theme
+  drush theme:enable gin
+  drush config:set system.theme admin gin -y
+  # Add German language and update translations
+  drush language-add de -y
+  drush locale:update -y
+  # Disable single content sync UUID check
+  drush config:set single_content_sync.settings site_uuid_check 0 -y
+  # Clear cache
+  drush cr
+  # Set config sync directory
+  configFile="/opt/drupal/web/sites/default/settings.php"
+  configSyncDir="/opt/drupal/sync/configs"
+  if grep -q "^\$settings\['config_sync_directory'\]" "$configFile"; then
+    sed -i "s|^\$settings\['config_sync_directory'\].*|\$settings['config_sync_directory'] = '${configSyncDir}';|" "$configFile"
+  else
+    printf '\n\$settings['\''config_sync_directory'\''] = '\''%s'\'';\n' "$configSyncDir" >> "$configFile"
+  fi
+  drush config:import --partial -y
+  drush content:import modules/custom/soda_scs_manager/content/contents.zip
+  drush config:set system.site page.front /home -y
 
-  composer require \
-    'drupal/book_tree_menu:^3.0' \
-    'drupal/book':^2.0' \
-    'drupal/bootstrap5:^4.0' \
-    'drupal/ckeditor_font:^2.0@beta' \
-    'drupal/content_entity_sync:^2.3' \
-    'drupal/core-composer-scaffold:^11.1' \
-    'drupal/core-project-message:^11.1' \
-    'drupal/core-recommended:^11.1' \
-    'drupal/custom_book_block:^2.0' \
-    'drupal/devel:^5.3' \
-    'drupal/entity_update:^3.0' \
-    'drupal/field_group:^4.0' \
-    'drupal/gin:^5.0' \
-    'drupal/health_check:^3.1' \
-    'drupal/imce:^3.1' \
-    'drupal/linkit:^7.0' \
-    'drupal/openid_connect:^3.0@alpha' \
-    'drupal/pathauto:^1.13' \
-    'drupal/private_files_download_permission:^3.1' \
-    'drupal/single_content_sync:^1.4' \
-    'drupal/smtp:^1.4' \
-    'drupal/svg_image:^3.2' \
-    'drupal/token:^1.16' \
-    'drush/drush:^13.5' \
-    'kint-php/kint:^6.0'
-    --no-update
-  drush en devel openid_connect entity_update health_check -y
 
-  # Install and enable scs module
+  # Set permissions
+  chown -R www-data:www-data /opt/drupal
+  chmod -R 775 /opt/drupal
 
-  git clone --branch main https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /var/www/html/modules/custom/soda_scs_manager
-  git config --global --add safe.directory /opt/drupal/web/modules/custom/soda_scs_manager
-  drush en soda_scs_manager -y
+  else
+    echo "Site already installed"
 fi
-
-# Set permissions
-chown -R www-data:www-data /opt/drupal
-chmod -R 775 /opt/drupal
 
 # keep the container running
 /usr/sbin/apache2ctl -D FOREGROUND
