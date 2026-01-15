@@ -1,8 +1,6 @@
 #!/bin/bash
 # Install the Drupal site with SCS Manager
 
-NEW_SITE=false
-
 until mysql -h ${DB_HOST} -u"${DB_USER}" -p"${DB_PASSWORD}" -e "SHOW DATABASES;" > /dev/null 2>&1; do
   echo "Waiting for MariaDB to be ready..."
   sleep 5
@@ -30,26 +28,34 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
   drush config:set single_content_sync.settings site_uuid_check 0 -y
   # Clear cache
   drush cr
-  # Set config sync directory
-  configFile="/opt/drupal/web/sites/default/settings.php"
-  configSyncDir="/opt/drupal/sync/configs"
-  if grep -q "^\$settings\['config_sync_directory'\]" "$configFile"; then
-    sed -i "s|^\$settings\['config_sync_directory'\].*|\$settings['config_sync_directory'] = '${configSyncDir}';|" "$configFile"
-  else
-    printf '\n\$settings['\''config_sync_directory'\''] = '\''%s'\'';\n' "$configSyncDir" >> "$configFile"
-  fi
-  drush config:import --partial -y
+
+  # Import configurations
+  drush config:import --partial --source=/opt/drupal/sync/configs -y
   drush content:import modules/custom/soda_scs_manager/content/contents.zip
   drush config:set system.site page.front /home -y
 
+  # Set config sync directory
+  configFile="/opt/drupal/web/sites/default/settings.php"
+  echo "
+if (file_exists(\$app_root . '/' . \$site_path . '/settings.redis.php')) {
+  include \$app_root . '/' . \$site_path . '/settings.redis.php';
+}
+" >> \$configFile
 
   # Set permissions
   chown -R www-data:www-data /opt/drupal
   chmod -R 775 /opt/drupal
 
-  else
-    echo "Site already installed"
+else
+  echo "Site already installed"
 fi
 
-# keep the container running
-/usr/sbin/apache2ctl -D FOREGROUND
+# Ensure PHP-FPM socket directory exists
+mkdir -p /run/php
+chown www-data:www-data /run/php
+
+# Start PHP-FPM in background
+php-fpm -D
+
+# Execute CMD (nginx)
+exec "$@"

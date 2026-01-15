@@ -1,26 +1,30 @@
-ARG DRUPAL_IMAGE=drupal:11.3.2-php8.3-apache-bookworm
+ARG DRUPAL_IMAGE=11.3.2-php8.3-fpm-bookworm
 ARG MODE=production
 
-FROM ${DRUPAL_IMAGE:-drupal:11.3.2-php8.3-apache-bookworm}
+FROM drupal:${DRUPAL_IMAGE:-11.3.2-php8.3-fpm-bookworm}
 
 LABEL org.opencontainers.image.source=https://github.com/soda-collections-objects-data-literacy/scs-manager-image.git
 LABEL org.opencontainers.image.description="Plain Drupal with preinstalled Site and SODa SCS Manager."
 
 # Install apts
-
 RUN apt-get update; \
     apt-get install -y --no-install-recommends \
+    curl \
     default-mysql-client \
     git \
+    imagemagick \
     libaom3 \
     libavif-dev \
     libavif15 \
     libdav1d6 \
     libfreetype6-dev \
     libgmp-dev \
+    libicu-dev \
     libjpeg62-turbo-dev \
     libpng-dev \
     libwebp-dev \
+    nginx \
+    sendmail \
     unzip \
     vim \
     wget
@@ -43,7 +47,30 @@ RUN docker-php-ext-configure gd \
     --with-avif \
     && docker-php-ext-install -j$(nproc) gd
 
-# Install apcu
+# Install intl
+RUN set -eux; \
+    docker-php-ext-configure intl \
+    && docker-php-ext-install intl;
+
+# Redis
+# Install Redis extension
+RUN set -eux; \
+    pecl install redis; \
+    docker-php-ext-enable redis;
+
+# Add Redis config
+RUN { \
+    echo 'redis.session.locking_enabled=1'; \
+    echo 'redis.session.lock_retries=100'; \
+    echo 'redis.session.lock_wait_time=5000'; \
+    echo 'session.save_handler = redis'; \
+    echo 'session.save_path = "tcp://redis:6379?database=2"'; \
+    } >> /usr/local/etc/php/conf.d/zz-redis-custom.ini;
+
+# Add Redis settings
+COPY ./configs/redis/redis.settings.php /opt/drupal/web/sites/default/redis.settings.php
+
+    # Install apcu
 RUN set -eux; \
 pecl install apcu;
 
@@ -54,7 +81,6 @@ RUN { \
     echo "apc.enable=1"; \
     echo "apc.shm_size=32M"; \
     } >> /usr/local/etc/php/conf.d/zz-apcu-custom.ini;
-
 
 # Install xdebug if mode is development
 RUN if [ "$MODE" = "development" ]; then \
@@ -90,15 +116,11 @@ RUN { \
     echo 'max_execution_time = 1200'; \
     echo 'max_input_time = 600'; \
     echo 'memory_limit = 1024M'; \
-    echo 'upload_max_filesize = 1024M'; \
     echo 'max_file_uploads = 50'; \
-    echo 'post_max_size = 1024M'; \
-    } >> /usr/local/etc/php/conf.d/zz-scs-manager-recommended.ini;
-
-# Enable output buffering
-RUN { \
     echo 'output_buffering = on'; \
-    } >> /usr/local/etc/php/conf.d/zz-drupal-recommended.ini;
+    echo 'post_max_size = 1024M'; \
+    echo 'upload_max_filesize = 1024M'; \
+    } >> /usr/local/etc/php/conf.d/zz-scs-manager-recommended.ini;
 
 # see https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
@@ -141,6 +163,7 @@ RUN set -eux; \
     'drupal/openid_connect:^3.0@alpha' \
     'drupal/pathauto:^1.13' \
     'drupal/private_files_download_permission:^3.1' \
+    'drupal/redis:^1.11' \
     'drupal/single_content_sync:^1.4' \
     'drupal/smtp:^1.4' \
     'drupal/svg_image:^3.2' \
@@ -166,6 +189,31 @@ RUN tar -xzf /opt/drupal/sync/configs.tar.gz -C /opt/drupal/sync/configs
 RUN rm /opt/drupal/sync/configs.tar.gz
 RUN chown -R www-data:www-data /var/www/html
 
+# Configure PHP-FPM to listen on a UNIX socket
+RUN mkdir -p /run/php && \
+    sed -i 's|listen = 9000|listen = /run/php/php-fpm.sock|' /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'listen.owner = www-data' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'listen.group = www-data' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'listen.mode = 0660' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Copy NGINX configurations
+COPY ./configs/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./configs/nginx/drupal.conf /etc/nginx/conf.d/drupal.conf
+RUN rm -f /etc/nginx/conf.d/default.conf && \
+    mkdir -p /run/nginx && \
+    ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stderr /var/log/nginx/error.log
+
+# In production mode, disable NGINX access logging except for errors.
+RUN if [ "$MODE" = "production" ]; then \
+      sed -i 's|access_log /var/log/nginx/access.log main;|access_log off;|' /etc/nginx/nginx.conf && \
+      sed -i 's|error_log /var/log/nginx/error.log warn;|error_log off;|' /etc/nginx/nginx.conf; \
+    fi
+
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 80
 
 ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

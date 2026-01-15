@@ -1,18 +1,18 @@
 # SCS Manager Docker Image
 
-A production-ready Docker image for the SODa SCS (Soda Collections) Manager built on Drupal 11 with Apache and PHP 8.3.
+A production-ready Docker image for the SODa SCS (Soda Collections) Manager built on Drupal 11 with NGINX, PHP-FPM, and PHP 8.3.
 
 ## Overview
 
 This Docker image provides a pre-configured Drupal 11 installation with the SODa SCS Manager module and all necessary dependencies. The image includes automated site installation, configuration synchronization, and content import on first startup.
 
-**Base Image:** `drupal:11.3.2-php8.3-apache-bookworm`
+**Base Image:** `drupal:11.3.2-php8.3-fpm-bookworm`
 
 **SCS Manager Version:** main branch
 
 ## Features
 
-- **Drupal 11.3.2** with PHP 8.3 and Apache on Debian Bookworm
+- **Drupal 11.3.2** with PHP 8.3, NGINX, and PHP-FPM on Debian Bookworm
 - **Pre-installed modules:**
   - SODa SCS Manager (custom module)
   - Admin Toolbar, Devel, Gin admin theme
@@ -21,26 +21,32 @@ This Docker image provides a pre-configured Drupal 11 installation with the SODa
   - OpenID Connect, SMTP
   - CKEditor Font, Linkit, Token, Pathauto
   - Language Icons, SVG Image, IMCE
+  - Redis module for caching
+  - Health Check module
   - And more (see Dockerfile for complete list)
 - **PHP Extensions:**
   - GD with AVIF, WebP, JPEG, and PNG support
   - APCu for opcode caching
+  - Redis for session and cache storage
   - Upload Progress for better file upload UX
   - GMP for arbitrary precision arithmetic
+  - Intl for internationalization
   - Xdebug (development mode only)
+- **Web Server:** NGINX with optimized configuration
+- **Session Storage:** Redis (database 2)
 - **Optimized PHP settings** for large file uploads and content management
 - **Automated setup:** First-run installation and configuration import
 - **Multi-language support:** German language pre-configured
-- **Health check endpoint** for monitoring
+- **Health check endpoint** (`/health`) for monitoring and orchestration
 
 ## Prerequisites
 
 - Docker Engine 20.10 or later
 - Docker Compose 2.0 or later (optional, but recommended)
 - MariaDB 11.5+ or MySQL 8.0+ database server
-- [SCS Manager Deployment infrastructure](https://github.com/soda-collections-objects-data-literacy/soda_scs_manager_deployment) with traefik, portainer, keycloak, opengdb, nextcloud (with openoffice), jupyterhub (with openrefine) and webprotégé.
+- [SCS Manager Deployment infrastructure](https://github.com/soda-collections-objects-data-literacy/soda_scs_manager_deployment) with traefik, mariadb, portainer, keycloak, opengdb, nextcloud (with openoffice), jupyterhub (with openrefine) and webprotégé.
 
-## Quick Start
+## Quick Start (for dummy evaluation)
 
 ### Using Docker Compose (Recommended)
 
@@ -67,6 +73,12 @@ services:
       - "8080:80"
     depends_on:
       - database
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
 
   database:
     image: mariadb:11.5.2
@@ -79,10 +91,21 @@ services:
     volumes:
       - scs-database-data:/var/lib/mysql
 
+  redis:
+    image: redis:8-alpine
+    container_name: scs-redis
+    restart: always
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - scs-redis-data:/data
+
 volumes:
   scs-manager-sites:
   scs-database-data:
+  scs-redis-data:
 ```
+
+**Note:** Redis is optional but recommended for session storage. If Redis is not available, PHP will fall back to file-based sessions.
 
 Start the services:
 
@@ -223,6 +246,7 @@ To execute Drush commands inside the running container:
 ```bash
 docker exec -it scs-manager drush cr
 docker exec -it scs-manager drush config:export
+docker exec -it scs-manager drush user:login
 ```
 
 ## Running Composer Commands
@@ -233,6 +257,17 @@ To run Composer commands:
 docker exec -it scs-manager composer require drupal/module_name
 docker exec -it scs-manager composer update
 ```
+
+## Redis Configuration
+
+The image includes Redis support for session storage:
+
+- **PHP Extension:** Redis PECL extension installed and enabled
+- **Session Handler:** Configured to use Redis (database 2)
+- **Drupal Module:** Redis module (`drupal/redis:^1.11`) included
+- **Connection:** `tcp://redis:6379?database=2`
+
+To use Redis, ensure a Redis container is available at hostname `redis` on port `6379`. The Redis settings file is automatically included if present at `/opt/drupal/web/sites/default/settings.redis.php`.
 
 ## Development Mode
 
@@ -254,6 +289,8 @@ The image includes the Health Check module. Access the health check endpoint:
 ```bash
 curl http://localhost:8080/health
 ```
+
+The health check endpoint returns a 200 status when Drupal is fully initialized and ready to serve requests. This is used by Docker Compose health checks and orchestration tools to determine when the container is ready.
 
 ## Accessing the Site
 
@@ -319,12 +356,32 @@ The image includes optimized PHP settings:
 - Max input time: 600s
 - Max file uploads: 50
 
-APCu cache:
+**APCu cache:**
 - Shared memory size: 32M
+- Enabled for CLI (development)
 
-OPcache:
+**OPcache:**
 - Memory consumption: 128M
 - Max accelerated files: 4000
+- Revalidation frequency: 0 (development mode) or default (production)
+
+**Session Configuration:**
+- Handler: Redis (when Redis is available)
+- Path: `tcp://redis:6379?database=2`
+- Locking enabled with retry mechanism
+
+## NGINX Configuration
+
+The image includes NGINX with optimized settings:
+
+- **Worker processes:** Auto (based on CPU cores)
+- **Worker connections:** 1024
+- **Gzip compression:** Enabled
+- **Client max body size:** 1024M
+- **Access logging:** Disabled in production mode
+- **Error logging:** Configured to stderr for Docker logging
+
+NGINX communicates with PHP-FPM via Unix socket (`/run/php/php-fpm.sock`) for optimal performance.
 
 ## License
 
