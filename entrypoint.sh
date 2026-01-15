@@ -16,6 +16,7 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
     --account-name="${DRUPAL_USER}" \
     --account-pass="${DRUPAL_PASSWORD}"
 
+  echo "Enabling modules..."
   # Enable modules
   drush en admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block devel entity_update field_group health_check imce language languageicons linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token -y
   # Enable theme and set admin theme
@@ -29,11 +30,13 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
   # Clear cache
   drush cr
 
+  echo "Importing contents and configs..."
   # Import configurations
   drush config:import --partial --source=/opt/drupal/sync/configs -y
   drush content:import modules/custom/soda_scs_manager/content/contents.zip
   drush config:set system.site page.front /home -y
 
+  echo "Extending settings.php"
   # Set config sync directory
   configFile="/opt/drupal/web/sites/default/settings.php"
   echo "
@@ -42,6 +45,7 @@ if (file_exists(\$app_root . '/' . \$site_path . '/settings.redis.php')) {
 }
 " >> \$configFile
 
+  echo "Set permissions..."
   # Set permissions
   chown -R www-data:www-data /opt/drupal
   chmod -R 775 /opt/drupal
