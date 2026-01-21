@@ -189,12 +189,14 @@ RUN tar -xzf /opt/drupal/sync/configs.tar.gz -C /opt/drupal/sync/configs
 RUN rm /opt/drupal/sync/configs.tar.gz
 RUN chown -R www-data:www-data /var/www/html
 
-# Configure PHP-FPM to listen on a UNIX socket
-RUN mkdir -p /run/php && \
-    sed -i 's|listen = 9000|listen = /run/php/php-fpm.sock|' /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'listen.owner = www-data' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'listen.group = www-data' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'listen.mode = 0660' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+# PHP-FPM performance pool config
+RUN mkdir -p /run/php
+
+# Remove default pool to avoid conflicts
+RUN rm -f /usr/local/etc/php-fpm.d/www.conf
+
+# Copy custom pool config
+COPY ./configs/php-fpm/www-performance.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Copy NGINX configurations
 COPY ./configs/nginx/nginx.conf /etc/nginx/nginx.conf
