@@ -192,8 +192,8 @@ RUN chown -R www-data:www-data /var/www/html
 # PHP-FPM performance pool config
 RUN mkdir -p /run/php
 
-# Copy custom pool config
-COPY ./configs/php-fpm/zz-docker.conf /usr/local/etc/php-fpm.d/www.conf
+# Copy custom pool config (override the default zz-docker.conf)
+COPY ./configs/php-fpm/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Copy NGINX configurations
 COPY ./configs/nginx/nginx.conf /etc/nginx/nginx.conf

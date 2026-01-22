@@ -45,6 +45,23 @@ if (file_exists(\$app_root . '/' . \$site_path . '/settings.redis.php')) {
 }
 " >> \$configFile
 
+  # Set proxy settings (if we are in a proxy environment)
+  if [ -n "${DRUPAL_PROXY_ADDRESSES}" ]; then
+    echo -e "\033[0;33mSETTING PROXY SETTINGS.\033[0m"
+    {
+      cat >> "$SETTINGS_FILE" << 'EOF'
+      $settings["reverse_proxy"] = TRUE;
+      $settings["reverse_proxy_trusted_headers"] = \Symfony\Component\HttpFoundation\Request::HEADER_X_FORWARDED_FOR | \Symfony\Component\HttpFoundation\Request::HEADER_X_FORWARDED_HOST | \Symfony\Component\HttpFoundation\Request::HEADER_X_FORWARDED_PORT | \Symfony\Component\HttpFoundation\Request::HEADER_X_FORWARDED_PROTO;
+      $settings['omit_vary_cookie'] = TRUE;
+EOF
+    ADDRESSES=$(printf '%s' "${DRUPAL_PROXY_ADDRESSES}" | sed 's/|/", "/g')
+    printf '%s\n' "\$settings['reverse_proxy_addresses'] = [\"${ADDRESSES}\"];" >> "${SETTINGS_FILE}"
+    } 1> /dev/null
+    echo -e "\033[0;32mPROXY SETTINGS SET.\033[0m\n"
+  else
+    echo -e "\033[0;33mNO PROXY SETTINGS SET.\033[0m\n"
+  fi
+
   echo "Set permissions..."
   # Set permissions
   chown -R www-data:www-data /opt/drupal
