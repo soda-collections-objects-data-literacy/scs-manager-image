@@ -1,7 +1,8 @@
 ARG DRUPAL_IMAGE=11.3.2-php8.3-fpm-bookworm
-ARG MODE=production
 
 FROM drupal:${DRUPAL_IMAGE:-11.3.2-php8.3-fpm-bookworm}
+
+ARG MODE=production
 
 LABEL org.opencontainers.image.source=https://github.com/soda-collections-objects-data-literacy/scs-manager-image.git
 LABEL org.opencontainers.image.description="Plain Drupal with preinstalled Site and SODa SCS Manager."
