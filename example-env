@@ -11,3 +11,5 @@ DB_USER=drupal
 DRUPAL_PASSWORD=your_admin_password
 DRUPAL_SITE_NAME=SCS Manager
 DRUPAL_USER=admin
+DRUPAL_PROXY_ADDRESSES='172.18.0.0/16|172.19.0.0/16'
+DRUPAL_TRUSTED_HOSTS='localhost|manager.scs.sammlungen.io|raw.manager.scs.sammlungen.io'
