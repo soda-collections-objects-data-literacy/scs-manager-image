@@ -46,9 +46,6 @@ if (file_exists(\$app_root . '/' . \$site_path . '/settings.redis.php')) {
 $settings['file_private_path'] = '/var/scs-manager/';
 " >> \$configFile
 
-<<<<<<< HEAD
-
-=======
   # Set proxy settings (if we are in a proxy environment)
   if [ -n "${DRUPAL_PROXY_ADDRESSES}" ]; then
     echo -e "\033[0;33mSETTING PROXY SETTINGS.\033[0m"
@@ -65,7 +62,6 @@ EOF
   else
     echo -e "\033[0;33mNO PROXY SETTINGS SET.\033[0m\n"
   fi
->>>>>>> c135d2bcd32af8d0fa3789f5a7131c1ccb11d30f
 
   echo "Set permissions..."
   # Set permissions

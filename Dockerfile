@@ -193,19 +193,8 @@ RUN chown -R www-data:www-data /var/www/html
 # PHP-FPM performance pool config
 RUN mkdir -p /run/php
 
-<<<<<<< HEAD
-# Copy custom pool config based on MODE
-RUN if [ "$MODE" = "development" ]; then \
-    echo "Using PHP-FPM development configuration"; \
-    else \
-    echo "Using PHP-FPM production configuration"; \
-    fi
-
-COPY ./configs/php-fpm/www.conf.${MODE:-production} /usr/local/etc/php-fpm.d/www.conf
-=======
 # Copy custom pool config (override the default zz-docker.conf)
 COPY ./configs/php-fpm/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
->>>>>>> c135d2bcd32af8d0fa3789f5a7131c1ccb11d30f
 
 # Copy NGINX configurations
 COPY ./configs/nginx/nginx.conf /etc/nginx/nginx.conf
