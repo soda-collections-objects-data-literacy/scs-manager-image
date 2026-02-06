@@ -92,8 +92,8 @@ RUN if [ "$MODE" = "development" ]; then \
 # @todo: This is a hack to get around the fact that the xdebug log directory is not writable by the www-data user. CHANGE ME IN FUTURE
 RUN if [ "$MODE" = "development" ]; then \
     mkdir -p /var/log/xdebug; \
-    chown www-data:www-data /var/log/xdebug; \
-    chmod 775 /var/log/xdebug; \
+    chown -R www-data:www-data /var/log/xdebug; \
+    chmod -R 775 /var/log/xdebug; \
     fi
 
 # Add xdebug config if mode is development
