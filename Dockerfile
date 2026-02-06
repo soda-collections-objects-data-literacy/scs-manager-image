@@ -100,14 +100,15 @@ RUN if [ "$MODE" = "development" ]; then \
 RUN if [ "$MODE" = "development" ]; then \
     { \
     echo 'xdebug.mode=debug,develop'; \
-    echo 'xdebug.client_host=host.docker.internal'; \
-    echo 'xdebug.start_with_request=trigger'; \
-    echo 'xdebug.trigger_value=scs'; \
+    # Change to host.docker.internal'when running xdebug on host machine
+    echo 'xdebug.client_host=127.0.0.1' ; \
     echo 'xdebug.client_port=9003'; \
+    echo 'xdebug.start_with_request=yes'; \
+    echo 'xdebug.var_display_max_depth=10'; \
+    echo 'xdebug.var_display_max_children=256'; \
+    echo 'xdebug.var_display_max_data=1024'; \
     echo 'xdebug.log=/var/log/xdebug/xdebug.log'; \
     echo 'xdebug.log_level=7'; \
-    echo 'xdebug.idekey=scs'; \
-    echo 'xdebug.discover_client_host=1'; \
     echo 'error_reporting=E_ALL'; \
     } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;\
     fi
