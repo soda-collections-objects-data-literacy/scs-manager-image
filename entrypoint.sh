@@ -18,7 +18,7 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
 
   echo "Enabling modules..."
   # Enable modules
-  drush en admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block devel entity_update field_group health_check imce language languageicons linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token -y
+  drush en admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block devel entity_update field_group health_check imce language languageicons layout_builder layout_discovery linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token -y
   # Enable theme and set admin theme
   drush theme:enable gin
   drush config:set system.theme admin gin -y
