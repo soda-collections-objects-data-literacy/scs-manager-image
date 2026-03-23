@@ -1,7 +1,8 @@
 ARG DRUPAL_IMAGE=11.3.2-php8.3-fpm-bookworm
-ARG MODE=production
 
 FROM drupal:${DRUPAL_IMAGE:-11.3.2-php8.3-fpm-bookworm}
+
+ARG MODE=production
 
 LABEL org.opencontainers.image.source=https://github.com/soda-collections-objects-data-literacy/scs-manager-image.git
 LABEL org.opencontainers.image.description="Plain Drupal with preinstalled Site and SODa SCS Manager."
@@ -91,22 +92,23 @@ RUN if [ "$MODE" = "development" ]; then \
 # @todo: This is a hack to get around the fact that the xdebug log directory is not writable by the www-data user. CHANGE ME IN FUTURE
 RUN if [ "$MODE" = "development" ]; then \
     mkdir -p /var/log/xdebug; \
-    chown www-data:www-data /var/log/xdebug; \
-    chmod 775 /var/log/xdebug; \
+    chown -R www-data:www-data /var/log/xdebug; \
+    chmod -R 775 /var/log/xdebug; \
     fi
 
 # Add xdebug config if mode is development
 RUN if [ "$MODE" = "development" ]; then \
     { \
     echo 'xdebug.mode=debug,develop'; \
-    echo 'xdebug.client_host=host.docker.internal'; \
-    echo 'xdebug.start_with_request=trigger'; \
-    echo 'xdebug.trigger_value=scs'; \
+    # Change to host.docker.internal'when running xdebug on host machine
+    echo 'xdebug.client_host=127.0.0.1' ; \
     echo 'xdebug.client_port=9003'; \
+    echo 'xdebug.start_with_request=yes'; \
+    echo 'xdebug.var_display_max_depth=10'; \
+    echo 'xdebug.var_display_max_children=256'; \
+    echo 'xdebug.var_display_max_data=1024'; \
     echo 'xdebug.log=/var/log/xdebug/xdebug.log'; \
     echo 'xdebug.log_level=7'; \
-    echo 'xdebug.idekey=scs'; \
-    echo 'xdebug.discover_client_host=1'; \
     echo 'error_reporting=E_ALL'; \
     } >> /usr/local/etc/php/conf.d/zz-xdebug-custom.ini;\
     fi
@@ -189,12 +191,11 @@ RUN tar -xzf /opt/drupal/sync/configs.tar.gz -C /opt/drupal/sync/configs
 RUN rm /opt/drupal/sync/configs.tar.gz
 RUN chown -R www-data:www-data /var/www/html
 
-# Configure PHP-FPM to listen on a UNIX socket
-RUN mkdir -p /run/php && \
-    sed -i 's|listen = 9000|listen = /run/php/php-fpm.sock|' /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'listen.owner = www-data' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'listen.group = www-data' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'listen.mode = 0660' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+# PHP-FPM performance pool config
+RUN mkdir -p /run/php
+
+# Copy custom pool config (override the default zz-docker.conf)
+COPY ./configs/php-fpm/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Copy NGINX configurations
 COPY ./configs/nginx/nginx.conf /etc/nginx/nginx.conf
