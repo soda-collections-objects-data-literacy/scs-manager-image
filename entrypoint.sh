@@ -30,11 +30,19 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
   # Clear cache
   drush cr
 
+  # Single content sync package directory (relative to web root)
+  echo "\$settings['content_sync_directory'] = 'modules/custom/soda_scs_manager/content/sync';" >> /opt/drupal/web/sites/default/settings.php
+
   echo "Importing contents and configs..."
   # Import configurations
   drush config:import --partial --source=/opt/drupal/sync/configs -y
-  drush content:import modules/custom/soda_scs_manager/content/contents.zip
+  drush content_entity_sync:import node --bundle=application,book,page
+  drush content_entity_sync:import media --bundle=image
+  drush content_entity_sync:import menu_link_content
   drush config:set system.site page.front /home -y
+  if [ -f /opt/drupal/sync/configs/openid_connect.client.scs_sso.yml ]; then
+    drush config:import /opt/drupal/sync/configs/openid_connect.client.scs_sso.yml -y
+  fi
 
   echo "Extending settings.php"
   # Set config sync directory
