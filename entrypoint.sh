@@ -45,14 +45,14 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
   fi
 
   echo "Extending settings.php"
-  # Set config sync directory and private path
-  configFile="/opt/drupal/web/sites/default/settings.php"
-  echo "
-if (file_exists(\$app_root . '/' . \$site_path . '/settings.redis.php')) {
-  include \$app_root . '/' . \$site_path . '/settings.redis.php';
+  SETTINGS_FILE="/opt/drupal/web/sites/default/settings.php"
+  cat >> "$SETTINGS_FILE" << 'EOF'
+
+if (file_exists($app_root . '/' . $site_path . '/settings.redis.php')) {
+  include $app_root . '/' . $site_path . '/settings.redis.php';
 }
 $settings['file_private_path'] = '/var/scs-manager/';
-" >> \$configFile
+EOF
 
   # Set proxy settings (if we are in a proxy environment)
   if [ -n "${DRUPAL_PROXY_ADDRESSES}" ]; then
