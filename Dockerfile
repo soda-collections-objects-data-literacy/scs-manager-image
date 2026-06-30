@@ -1,4 +1,4 @@
-ARG DRUPAL_IMAGE=11.3.2-php8.3-fpm-bookworm
+ARG DRUPAL_IMAGE=11.3-php8.3-fpm-bookworm
 
 FROM drupal:${DRUPAL_IMAGE:-11.3.2-php8.3-fpm-bookworm}
 
