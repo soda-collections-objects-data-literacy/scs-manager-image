@@ -1,24 +1,25 @@
 # SCS Manager Docker Image
 
-A production-ready Docker image for the SODa SCS (Soda Collections) Manager built on Drupal 11 with NGINX, PHP-FPM, and PHP 8.3.
+A production-ready Docker image for the SODa SCS (Soda Collections) Manager built on Drupal 11.4 with NGINX, PHP-FPM, and PHP 8.4.
 
 ## Overview
 
 This Docker image provides a pre-configured Drupal 11 installation with the SODa SCS Manager module and all necessary dependencies. The image includes automated site installation, configuration synchronization, and content import on first startup.
 
-**Base Image:** `drupal:11.3.2-php8.3-fpm-bookworm`
+**Base Image:** `drupal:11.4-php8.4-fpm-bookworm`
 
-**SCS Manager Version:** main branch
+**SCS Manager:** [`drupal/soda_scs_manager:^3.0`](https://www.drupal.org/project/soda_scs_manager) via Composer (Drupal.org)
 
 ## Features
 
-- **Drupal 11.3.2** with PHP 8.3, NGINX, and PHP-FPM on Debian Bookworm
+- **Drupal 11.4** with PHP 8.4, NGINX, and PHP-FPM on Debian Bookworm
 - **Pre-installed modules:**
-  - SODa SCS Manager (custom module)
+  - [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) (`drupal/soda_scs_manager:^3.0` from packages.drupal.org)
+  - Companion theme `soda_scs_manager_theme` (Git clone until published on Drupal.org)
   - Admin Toolbar, Devel, Gin admin theme
   - Book, Book Tree Menu, Custom Book Block
   - Content Entity Sync, Single Content Sync
-  - OpenID Connect, SMTP
+  - OpenID Connect, SMTP, Field Group (module hard dependencies)
   - CKEditor Font, Linkit, Token, Pathauto
   - Language Icons, SVG Image, IMCE
   - Redis module for caching
@@ -297,6 +298,25 @@ The health check endpoint returns a 200 status when Drupal is fully initialized 
 - **Frontend:** `http://localhost:8080`
 - **Admin Panel:** `http://localhost:8080/admin`
 - **Login:** Use the credentials specified in `DRUPAL_USER` and `DRUPAL_PASSWORD`
+
+## Building the Image
+
+```bash
+cd /path/to/scs-manager-image
+docker build --build-arg MODE=production -t scs-manager-image-production:local .
+```
+
+Pin a specific [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) release or theme branch:
+
+```bash
+docker build \
+  --build-arg MODE=production \
+  --build-arg SODA_SCS_MANAGER_VERSION=3.0.0 \
+  --build-arg SODA_SCS_MANAGER_THEME_REF=1.x \
+  -t scs-manager-image-production:3.0.0 .
+```
+
+Default: `SODA_SCS_MANAGER_VERSION=^3.0` (Composer constraint from Drupal.org).
 
 ## Updating the Image
 

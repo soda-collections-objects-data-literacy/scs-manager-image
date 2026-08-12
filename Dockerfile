@@ -1,6 +1,6 @@
-ARG DRUPAL_IMAGE=11.3-php8.3-fpm-bookworm
+ARG DRUPAL_IMAGE=11.4-php8.4-fpm-bookworm
 
-FROM drupal:${DRUPAL_IMAGE:-11.3.2-php8.3-fpm-bookworm}
+FROM drupal:${DRUPAL_IMAGE:-11.4-php8.4-fpm-bookworm}
 
 ARG MODE=production
 
@@ -139,7 +139,10 @@ RUN if [ "$MODE" = "development" ]; then \
     } >> /usr/local/etc/php/conf.d/zz-opcache-recommended.ini;\
     fi
 
-# Install drush
+# SODa SCS Manager release on Drupal.org (https://www.drupal.org/project/soda_scs_manager)
+ARG SODA_SCS_MANAGER_VERSION=^3.0
+
+# Install Drupal packages + SODa SCS Manager from packages.drupal.org
 RUN set -eux; \
     cd /opt/drupal && \
     composer require \
@@ -150,9 +153,9 @@ RUN set -eux; \
     'drupal/ckeditor_font:^2.0@beta' \
     'drupal/coder:^8.3' \
     'drupal/content_entity_sync:^2.3' \
-    'drupal/core-composer-scaffold:^11.3' \
-    'drupal/core-project-message:^11.3' \
-    'drupal/core-recommended:^11.3' \
+    'drupal/core-composer-scaffold:^11.4' \
+    'drupal/core-project-message:^11.4' \
+    'drupal/core-recommended:^11.4' \
     'drupal/custom_book_block:^2.0' \
     'drupal/devel:^5.3' \
     'drupal/entity_update:^3.0' \
@@ -168,6 +171,7 @@ RUN set -eux; \
     'drupal/redis:^1.11' \
     'drupal/single_content_sync:^1.4' \
     'drupal/smtp:^1.4' \
+    "drupal/soda_scs_manager:${SODA_SCS_MANAGER_VERSION}" \
     'drupal/svg_image:^3.2' \
     'drupal/token:^1.17' \
     'drush/drush:^13.5' \
@@ -176,9 +180,12 @@ RUN set -eux; \
 # Actually install the packages
 RUN composer install --no-interaction
 
-# Install and enable scs module
-RUN git clone --branch main https://github.com/soda-collections-objects-data-literacy/soda_scs_manager.git /opt/drupal/web/modules/custom/soda_scs_manager
-RUN git config --global --add safe.directory /opt/drupal/web/modules/custom/soda_scs_manager
+# Companion theme is required by soda_scs_manager but not yet on Drupal.org.
+ARG SODA_SCS_MANAGER_THEME_REF=1.x
+RUN git clone --depth 1 --branch "${SODA_SCS_MANAGER_THEME_REF}" \
+      https://github.com/rnsrk/soda_scs_manager_theme.git \
+      /opt/drupal/web/themes/custom/soda_scs_manager_theme \
+    && git config --global --add safe.directory /opt/drupal/web/themes/custom/soda_scs_manager_theme
 
 # add composer bin to PATH
 RUN ln -s /opt/drupal/vendor/bin/drush /usr/local/bin/drush

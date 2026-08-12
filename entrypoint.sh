@@ -17,11 +17,11 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
     --account-pass="${DRUPAL_PASSWORD}"
 
   echo "Enabling modules..."
-  # Enable modules
-  drush en admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block devel entity_update field_group health_check imce language languageicons layout_builder layout_discovery linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token -y
-  # Enable theme and set admin theme
-  drush theme:enable gin
+  # Enable companion theme first (hard dependency of soda_scs_manager), then modules
+  drush theme:enable soda_scs_manager_theme gin -y
+  drush config:set system.theme default soda_scs_manager_theme -y
   drush config:set system.theme admin gin -y
+  drush en admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block devel entity_update field_group health_check imce language languageicons layout_builder layout_discovery linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token -y
   # Add German language and update translations
   drush language-add de -y
   drush locale:update -y
@@ -30,8 +30,8 @@ if [ ! -f /opt/drupal/web/sites/default/settings.php ]; then
   # Clear cache
   drush cr
 
-  # Single content sync package directory (relative to web root)
-  echo "\$settings['content_sync_directory'] = 'modules/custom/soda_scs_manager/content/sync';" >> /opt/drupal/web/sites/default/settings.php
+  # Single content sync package directory (composer installs module under contrib/)
+  echo "\$settings['content_sync_directory'] = 'modules/contrib/soda_scs_manager/content/sync';" >> /opt/drupal/web/sites/default/settings.php
 
   echo "Importing contents and configs..."
   # Import configurations

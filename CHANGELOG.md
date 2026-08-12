@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0
+
+### Changed
+- Base image → `drupal:11.4-php8.4-fpm-bookworm` (Drupal 11.4 / PHP 8.4); Composer core pins `^11.4`.
+- Install [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) via Composer (`drupal/soda_scs_manager:^3.0`) instead of cloning the former GitHub `main` branch into `modules/custom`.
+- First-run content sync path updated to `modules/contrib/soda_scs_manager/content/sync`.
+- Enable and set `soda_scs_manager_theme` as the default theme on first install (required module dependency).
+
+### Added
+- Build args `SODA_SCS_MANAGER_VERSION` (default `^3.0`) and `SODA_SCS_MANAGER_THEME_REF` (default `1.x`).
+- Clone companion theme from `https://github.com/rnsrk/soda_scs_manager_theme.git` (not yet on Drupal.org).
+
 ## 2.0.0
 
 ### Breaking Changes
