@@ -8,15 +8,26 @@ This Docker image provides a pre-configured Drupal 11 installation with the SODa
 
 **Base Image:** `drupal:11.4-php8.5-fpm-bookworm`
 
-**SCS Manager:** [`drupal/soda_scs_manager:^3.0`](https://www.drupal.org/project/soda_scs_manager) via Composer (Drupal.org)
+**SCS Manager:** [`drupal/soda_scs_manager:^3.1`](https://www.drupal.org/project/soda_scs_manager) via Composer (Drupal.org)
+
+## Images
+
+One Dockerfile builds two images; the `MODE` build argument selects which.
+
+| Image | `MODE` | For |
+|-------|--------|-----|
+| `ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-production` | `production` | Running SCS Manager. No Xdebug, no dev Composer packages, OPcache without file re-stat, devel not enabled, NGINX logs only errors. |
+| `ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-development` | `development` | Working on SCS Manager and its theme. Xdebug, PHPUnit, PHPStan, PHP_CodeSniffer, CSpell, Node.js, a `developer` user, and the module and theme as git checkouts. See [Development Image](#development-image). |
+
+Tags: `latest` (newest release), `<major>`, `<major>.<minor>`, `<version>`, the branch name (`3.x`) and `sha-<commit>`.
 
 ## Features
 
 - **Drupal 11.4** with PHP 8.5, NGINX, and PHP-FPM on Debian Bookworm
 - **Pre-installed modules:**
-  - [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) (`drupal/soda_scs_manager:^3.0` from packages.drupal.org)
+  - [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) (`drupal/soda_scs_manager:^3.1` from packages.drupal.org)
   - Companion theme `soda_scs_manager_theme` (Git clone until published on Drupal.org)
-  - Admin Toolbar, Devel, Gin admin theme
+  - Admin Toolbar, Gin admin theme, Devel (enabled in the development image only)
   - Book, Book Tree Menu, Custom Book Block
   - Content Entity Sync, Single Content Sync
   - OpenID Connect, SMTP, Field Group (module hard dependencies)
@@ -24,6 +35,7 @@ This Docker image provides a pre-configured Drupal 11 installation with the SODa
   - Language Icons, SVG Image, IMCE
   - Redis module for caching
   - Health Check module
+  - CKEditor 5 Plugin Pack, Colorbox, EU Cookie Compliance, ImageMagick, Image Effects, Paragraphs, Simple Menu Permissions, Token Filter, Nextcloud WebDAV Mount
   - And more (see Dockerfile for complete list)
 - **PHP Extensions:**
   - GD with AVIF, WebP, JPEG, and PNG support
@@ -32,7 +44,7 @@ This Docker image provides a pre-configured Drupal 11 installation with the SODa
   - Upload Progress for better file upload UX
   - GMP for arbitrary precision arithmetic
   - Intl for internationalization
-  - Xdebug (development mode only)
+  - Xdebug (development image only)
 - **Web Server:** NGINX with optimized configuration
 - **Session Storage:** Redis (database 2)
 - **Optimized PHP settings** for large file uploads and content management
@@ -106,7 +118,7 @@ volumes:
   scs-redis-data:
 ```
 
-**Note:** Redis is optional but recommended for session storage. If Redis is not available, PHP will fall back to file-based sessions.
+**Note:** Redis is required: it stores the PHP sessions and the Drupal cache.
 
 Start the services:
 
@@ -231,14 +243,16 @@ On the first startup, the entrypoint script will:
 
 1. Wait for the database to be ready
 2. Install Drupal with the provided credentials
-3. Enable all required modules
+3. Enable all required modules (devel only in the development image)
 4. Configure the Gin admin theme
 5. Add German language support
 6. Import configuration from `/opt/drupal/sync/configs`
 7. Import default content for the SCS Manager module
-8. Set proper file permissions
+8. Set file permissions: the sites volume belongs to `www-data`, `settings.php` is read-only
 
 This process may take 2-5 minutes. Subsequent startups are instant.
+
+On later starts of an installed site, the entrypoint runs `drush updatedb` and `drush cr` once whenever the image ships a different package set (fingerprint of its `composer.lock`, compared with `web/sites/.scs-packages-version`). A failed update is retried on the next start.
 
 ## Running Drush Commands
 
@@ -261,27 +275,106 @@ docker exec -it scs-manager composer update
 
 ## Redis Configuration
 
-The image includes Redis support for session storage:
+Redis holds the PHP sessions and the Drupal cache, so the container needs a Redis server at hostname `redis` (`REDIS_HOST` / `REDIS_PORT` change it for the cache; sessions always use `redis:6379`).
 
-- **PHP Extension:** Redis PECL extension installed and enabled
-- **Session Handler:** Configured to use Redis (database 2)
-- **Drupal Module:** Redis module (`drupal/redis:^1.11`) included
-- **Connection:** `tcp://redis:6379?database=2`
+- **PHP Extension:** phpredis, built from its GitHub release
+- **Sessions:** `tcp://redis:6379?database=2`, with locking
+- **Drupal cache:** Redis module (`drupal/redis:^1.11`); all bins except `form`, plus the bootstrap container, lock, flood and queue backends
+- **Settings:** `/var/configs/redis.settings.php` in the image. On every start the entrypoint makes sure `settings.php` includes it and the `redis` module is enabled, so sites installed by older images switch to the Redis cache as well.
 
-To use Redis, ensure a Redis container is available at hostname `redis` on port `6379`. The Redis settings file is automatically included if present at `/opt/drupal/web/sites/default/settings.redis.php`.
+## Development Image
 
-## Development Mode
+`ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-development` is the production image plus:
 
-To get the image with development options use the `ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-development:latest` image.
+| Tool | Where |
+|------|-------|
+| Xdebug 3.5 (`debug,develop`, trigger mode) | PHP extension, `/usr/local/etc/php/conf.d/zz-xdebug-custom.ini` |
+| PHPUnit, Mink, Prophecy (`drupal/core-dev` at the installed core version) | `/opt/drupal/vendor/bin/phpunit` |
+| PHPStan with phpstan-drupal, phpstan-phpunit and deprecation rules | `/opt/drupal/vendor/bin/phpstan` |
+| PHP_CodeSniffer with the Drupal and DrupalPractice standards (Coder) | `/opt/drupal/vendor/bin/phpcs`, `phpcbf` |
+| PHP Parallel Lint | `/opt/drupal/vendor/bin/parallel-lint` |
+| CSpell, Node.js 24, npm | global (`cspell`, `node`, `npm`) |
+| devel (enabled on the first start) and Kint | Drupal modules / Composer |
+| CLI helpers: `rg`, `fd`, `jq`, `tree`, `less`, `ssh`, `file`, `gpg` | `/usr/bin` |
+| `scs-lint` | `/usr/local/bin/scs-lint` |
 
-Xdebug configuration:
-- Mode: `debug,develop`
-- Client host: `host.docker.internal`
+The lint and test tools sit in the site's `vendor/`, the same layout as the Drupal GitLab CI, so PHPStan and PHPUnit load the real Drupal codebase. `vendor/bin` is on `PATH`, for login shells as well.
+
+### Module and theme as git checkouts
+
+`soda_scs_manager` (`web/modules/contrib/soda_scs_manager`) is installed from source, a git clone of `https://git.drupalcode.org/project/soda_scs_manager.git` at the release Composer resolved. The theme (`web/themes/custom/soda_scs_manager_theme`) is a full clone of `SODA_SCS_MANAGER_THEME_REF`. Fetches use HTTPS without keys; `git push` goes over SSH (`git@git.drupal.org:`, `git@github.com:`), so mount your SSH key to push.
+
+Put a named volume on each path so branches and uncommitted work survive container recreation and image pulls. Docker seeds an empty named volume from the image once; later image updates do not touch it, so update the clones with git. Or bind-mount an existing clone from the host instead.
+
+### The `developer` user
+
+nginx and PHP-FPM run as root and `www-data` as usual. The image also has a `developer` user (in the `www-data` group, no sudo) for an IDE, an agent, or `docker exec -u developer`. The codebase under `/opt/drupal` is group-writable for `www-data`, so `developer` can edit, run Composer and use git there.
+
+Set `DEV_UID` / `DEV_GID` to your host user's IDs (`id -u`, `id -g`); the entrypoint moves `developer` to them on every start, so bind-mounted clones and `~/.ssh` stay writable without copying.
+
+### Docker Compose example
+
+```yaml
+services:
+  scs-manager:
+    image: ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-development:latest
+    environment:
+      # ...the variables from Quick Start, plus:
+      DEV_UID: 1000
+      DEV_GID: 1000
+      # Xdebug runs in trigger mode; XDEBUG_MODE=off switches it off.
+      XDEBUG_MODE: debug,develop
+      # For an IDE on the host instead of attached into the container:
+      # XDEBUG_CONFIG: client_host=host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - scs-manager-sites:/opt/drupal/web/sites
+      - scs-manager-module:/opt/drupal/web/modules/contrib/soda_scs_manager
+      - scs-manager-theme:/opt/drupal/web/themes/custom/soda_scs_manager_theme
+      # Push over SSH as developer (keys must belong to DEV_UID):
+      # - ~/.ssh:/home/developer/.ssh:ro
+      # Keep the IDE server between recreations:
+      # - scs-manager-vscode-server:/home/developer/.vscode-server
+    labels:
+      # Attach Cursor / VS Code as `developer` (not root). PID 1 stays root.
+      devcontainer.metadata: '[{"remoteUser":"developer","workspaceFolder":"/opt/drupal/web/modules/contrib/soda_scs_manager"}]'
+
+volumes:
+  scs-manager-sites:
+  scs-manager-module:
+  scs-manager-theme:
+```
+
+Do not bind-mount the whole `/opt/drupal` from the host: that hides the baked `vendor/` with PHPUnit, PHPStan and PHP_CodeSniffer.
+
+### Xdebug
+
+- Mode: `debug,develop`, `start_with_request=trigger`
+- Client host: `127.0.0.1` (IDE attached into the container); for an IDE on the host set `XDEBUG_CONFIG=client_host=host.docker.internal`
 - Port: `9003`
 - IDE key: `scs`
-- Trigger value: `scs`
+- Log: `/var/log/xdebug/xdebug.log`
 
-Configure your IDE to listen on port 9003 and use the IDE key `scs`.
+Start a session with the `XDEBUG_TRIGGER` / `XDEBUG_SESSION` cookie or query parameter (a browser helper sets it). For Drush: `XDEBUG_TRIGGER=1 drush …`. The entrypoint runs its own Drush calls with `XDEBUG_MODE=off`.
+
+To replace the Xdebug settings completely, bind-mount your own file onto `/usr/local/etc/php/conf.d/zz-xdebug-custom.ini`.
+
+### Lint and test
+
+`scs-lint` runs the tools against the SODa SCS Manager module, or the extension path you pass. An extension's own `phpcs.xml(.dist)`, `phpstan.neon(.dist)`, CSpell config and `phpunit.xml(.dist)` win; otherwise the fallbacks in `/usr/local/share/scs-dev/` apply (Drupal and DrupalPractice standards, PHPStan level 0, the Drupal core CSpell dictionaries, core's `phpunit.xml.dist`).
+
+```bash
+docker exec -it -u developer scs-manager scs-lint                 # lint, phpcs, phpstan, cspell
+docker exec -it -u developer scs-manager scs-lint phpstan
+docker exec -it -u developer scs-manager scs-lint phpcbf           # fix what PHPCS can
+docker exec -it -u developer scs-manager scs-lint cspell web/themes/custom/soda_scs_manager_theme
+docker exec -it -u developer scs-manager scs-lint phpunit -- --testsuite kernel
+```
+
+Arguments after `--` go to the tool. `scs-lint phpunit` uses `SIMPLETEST_DB` when set; otherwise it builds it from `DB_*`, so kernel and functional tests create prefixed tables in the site database. Run tests as `developer`: browser output goes to `web/sites/simpletest/browser_output`, which the entrypoint prepares.
+
+The tools also work directly, for example `phpcs --standard=Drupal,DrupalPractice web/modules/contrib/soda_scs_manager` from `/opt/drupal`.
 
 ## Health Check
 
@@ -303,10 +396,25 @@ The health check endpoint returns a 200 status when Drupal is fully initialized 
 
 ```bash
 cd /path/to/scs-manager-image
-docker build --build-arg MODE=production -t scs-manager-image-production:local .
+docker build --pull --build-arg MODE=production -t scs-manager-image-production:local .
+docker build --pull --build-arg MODE=development -t scs-manager-image-development:local .
 ```
 
-Pin a specific [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) release or theme branch:
+Build arguments:
+
+| Argument | Default | Purpose |
+|----------|---------|---------|
+| `MODE` | `production` | `production` or `development` |
+| `DRUPAL_IMAGE` | `11.4-php8.5-fpm-bookworm` | Tag of the official `drupal` base image |
+| `SODA_SCS_MANAGER_VERSION` | `^3.1` | Composer constraint for `drupal/soda_scs_manager` |
+| `SODA_SCS_MANAGER_THEME_REF` | `1.x` | Branch or tag of `soda_scs_manager_theme` |
+| `PHPREDIS_VERSION` | `6.3.0` | phpredis release tag, built from GitHub |
+| `COLORBOX_LIBRARY_VERSION` | `1.7.0` | Colorbox JS library for the colorbox module |
+| `DOMPURIFY_VERSION` | `3.4.0` | DOMPurify (colorbox sanitizer), from npm |
+| `NODE_MAJOR` | `24` | Node.js line (development) |
+| `DEV_UID` / `DEV_GID` | `1000` | Build-time IDs of `developer` (development; the `DEV_UID` / `DEV_GID` environment variables change them at start) |
+
+PHP extensions compile in a builder stage; the runtime image gets the extensions without the `-dev` headers. Pin a specific [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) release or theme branch:
 
 ```bash
 docker build \
@@ -316,7 +424,7 @@ docker build \
   -t scs-manager-image-production:3.0.0 .
 ```
 
-Default: `SODA_SCS_MANAGER_VERSION=^3.0` (Composer constraint from Drupal.org).
+Default: `SODA_SCS_MANAGER_VERSION=^3.1` (Composer constraint from Drupal.org).
 
 ## Updating the Image
 
@@ -348,11 +456,10 @@ docker logs scs-database
 
 ### Permission issues
 
-Reset permissions inside the container:
+The codebase under `/opt/drupal` belongs to root (group-writable for `www-data` in the development image); PHP-FPM only writes to the sites volume and `/var/scs-manager`. Reset those:
 
 ```bash
-docker exec -it scs-manager chown -R www-data:www-data /opt/drupal
-docker exec -it scs-manager chmod -R 775 /opt/drupal
+docker exec -it scs-manager chown -R www-data:www-data /opt/drupal/web/sites /var/scs-manager
 ```
 
 ### Site already installed but needs reinstall
@@ -376,14 +483,13 @@ The image includes optimized PHP settings:
 - Max input time: 600s
 - Max file uploads: 50
 
-**APCu cache:**
-- Shared memory size: 32M
-- Enabled for CLI (development)
+**APCu cache** (`zz-apcu-custom.ini`):
+- Shared memory size: 256M
+- Off for the CLI, so cron and Drush do not keep stale caches
 
-**OPcache:**
-- Memory consumption: 128M
-- Max accelerated files: 4000
-- Revalidation frequency: 0 (development mode) or default (production)
+**OPcache** (`zz-opcache-recommended.ini`, per image):
+- Production: no file re-stat (`validate_timestamps=0`), 512M, 30000 files, tracing JIT
+- Development: re-stat on every request (`validate_timestamps=1`, `revalidate_freq=0`), 256M, JIT off (Xdebug)
 
 **Session Configuration:**
 - Handler: Redis (when Redis is available)

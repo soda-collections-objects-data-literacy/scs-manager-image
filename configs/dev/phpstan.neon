@@ -1,0 +1,12 @@
+# Fallback PHPStan configuration for scs-lint, used when the extension has no
+# phpstan.neon(.dist) of its own. Same level as the Drupal GitLab CI default.
+# mglaman/phpstan-drupal is loaded through phpstan/extension-installer.
+parameters:
+  level: 0
+  reportUnmatchedIgnoredErrors: false
+  excludePaths:
+    - */node_modules/*
+    - */vendor/*
+  ignoreErrors:
+    # new static() is a best practice in Drupal, so we cannot fix that.
+    - "#^Unsafe usage of new static#"

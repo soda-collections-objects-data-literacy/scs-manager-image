@@ -1,0 +1,17 @@
+{
+  "description": "Fallback CSpell configuration for scs-lint, used when the extension has no CSpell config of its own. Imports the Drupal core dictionaries like the Drupal GitLab CI cspell job.",
+  "import": ["/opt/drupal/web/core/.cspell.json"],
+  "useGitignore": true,
+  "ignorePaths": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/*.min.js",
+    "**/*.map",
+    "**/*.po",
+    "**/composer.lock",
+    "**/package-lock.json",
+    "**/yarn.lock",
+    "**/LICENSE*"
+  ]
+}
