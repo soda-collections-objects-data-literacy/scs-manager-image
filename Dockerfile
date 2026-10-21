@@ -1,6 +1,6 @@
-ARG DRUPAL_IMAGE=11.4-php8.4-fpm-bookworm
+ARG DRUPAL_IMAGE=11.4-php8.5-fpm-bookworm
 
-FROM drupal:${DRUPAL_IMAGE:-11.4-php8.4-fpm-bookworm}
+FROM drupal:${DRUPAL_IMAGE:-11.4-php8.5-fpm-bookworm}
 
 ARG MODE=production
 

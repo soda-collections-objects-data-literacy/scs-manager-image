@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.0
+
+### Changed
+- Base image → `drupal:11.4-php8.5-fpm-bookworm` (PHP 8.5). Build with `--pull` so the image picks up PHP 8.5.12+, which fixes CVE-2026-109618 and CVE-2026-109619.
+
 ## 3.0.0
 
 ### Changed

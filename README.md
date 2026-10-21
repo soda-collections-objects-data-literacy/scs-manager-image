@@ -1,18 +1,18 @@
 # SCS Manager Docker Image
 
-A production-ready Docker image for the SODa SCS (Soda Collections) Manager built on Drupal 11.4 with NGINX, PHP-FPM, and PHP 8.4.
+A production-ready Docker image for the SODa SCS (Soda Collections) Manager built on Drupal 11.4 with NGINX, PHP-FPM, and PHP 8.5.
 
 ## Overview
 
 This Docker image provides a pre-configured Drupal 11 installation with the SODa SCS Manager module and all necessary dependencies. The image includes automated site installation, configuration synchronization, and content import on first startup.
 
-**Base Image:** `drupal:11.4-php8.4-fpm-bookworm`
+**Base Image:** `drupal:11.4-php8.5-fpm-bookworm`
 
 **SCS Manager:** [`drupal/soda_scs_manager:^3.0`](https://www.drupal.org/project/soda_scs_manager) via Composer (Drupal.org)
 
 ## Features
 
-- **Drupal 11.4** with PHP 8.4, NGINX, and PHP-FPM on Debian Bookworm
+- **Drupal 11.4** with PHP 8.5, NGINX, and PHP-FPM on Debian Bookworm
 - **Pre-installed modules:**
   - [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) (`drupal/soda_scs_manager:^3.0` from packages.drupal.org)
   - Companion theme `soda_scs_manager_theme` (Git clone until published on Drupal.org)
