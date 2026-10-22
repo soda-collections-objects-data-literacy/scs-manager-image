@@ -14,6 +14,7 @@
 - Database updates on image upgrades: the image records a fingerprint of its `composer.lock`; when an installed site was last updated with another one, the entrypoint runs `drush updatedb` and `drush cr` before anything else touches the site.
 
 ### Changed
+- The development image checks out `soda_scs_manager` on the `3.x` branch (`SODA_SCS_MANAGER_DEV_VERSION=3.x-dev`) instead of the release tag, so module work starts on the development branch. Production keeps the release (`SODA_SCS_MANAGER_VERSION=^3.1`).
 - `SODA_SCS_MANAGER_VERSION` defaults to `^3.1`: soda_scs_manager 3.0.0 cannot be installed on a fresh Drupal 11.4 site (theme listed as a module dependency, missing `field.storage.node.body`).
 - Multi-stage build: PHP extensions compile in a builder stage, the runtime image keeps no `-dev` headers.
 - phpredis builds from its GitHub release tag (`PHPREDIS_VERSION`, default `6.3.0`): pecl.php.net answered 504 for `redis-6.3.0.tgz`. APCu and Xdebug stay on PECL, one package per call with retries.

@@ -150,9 +150,12 @@ COPY --from=builder /usr/local/etc/php/conf.d/docker-php-ext-*.ini /usr/local/et
 # - The writable state (sites, private files) lives on volumes owned by
 #   www-data.
 
-# SODa SCS Manager release on Drupal.org (https://www.drupal.org/project/soda_scs_manager)
-# and the companion theme, which is not on Drupal.org yet.
+# SODa SCS Manager from Drupal.org (https://www.drupal.org/project/soda_scs_manager):
+# production takes the release, development the 3.x branch (git checkout on
+# the branch, so work starts on top of it). The companion theme is not on
+# Drupal.org yet.
 ARG SODA_SCS_MANAGER_VERSION=^3.1
+ARG SODA_SCS_MANAGER_DEV_VERSION=3.x-dev
 ARG SODA_SCS_MANAGER_THEME_REF=1.x
 
 # Drupal packages + SODa SCS Manager from packages.drupal.org. devel stays in
@@ -161,9 +164,11 @@ ARG SODA_SCS_MANAGER_THEME_REF=1.x
 # git checkouts so they can be worked on in place.
 RUN set -eux; \
     cd /opt/drupal; \
+    moduleConstraint="${SODA_SCS_MANAGER_VERSION}"; \
     if [ "$MODE" = "development" ]; then \
     umask 002; \
     composer config preferred-install.drupal/soda_scs_manager source; \
+    moduleConstraint="${SODA_SCS_MANAGER_DEV_VERSION}@dev"; \
     fi; \
     composer require --no-interaction --no-progress \
     'drupal/admin_toolbar:^3.6' \
@@ -198,7 +203,7 @@ RUN set -eux; \
     'drupal/simple_menu_permissions:^3.0' \
     'drupal/single_content_sync:^1.4' \
     'drupal/smtp:^1.4' \
-    "drupal/soda_scs_manager:${SODA_SCS_MANAGER_VERSION}" \
+    "drupal/soda_scs_manager:${moduleConstraint}" \
     'drupal/svg_image:^3.2' \
     'drupal/token:^1.17' \
     'drupal/token_filter:^2.2' \

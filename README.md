@@ -302,7 +302,7 @@ The lint and test tools sit in the site's `vendor/`, the same layout as the Drup
 
 ### Module and theme as git checkouts
 
-`soda_scs_manager` (`web/modules/contrib/soda_scs_manager`) is installed from source, a git clone of `https://git.drupalcode.org/project/soda_scs_manager.git` at the release Composer resolved. The theme (`web/themes/custom/soda_scs_manager_theme`) is a full clone of `SODA_SCS_MANAGER_THEME_REF`. Fetches use HTTPS without keys; `git push` goes over SSH (`git@git.drupal.org:`, `git@github.com:`), so mount your SSH key to push.
+`soda_scs_manager` (`web/modules/contrib/soda_scs_manager`) is installed from source as `3.x-dev` (`SODA_SCS_MANAGER_DEV_VERSION`): a git clone of `https://git.drupalcode.org/project/soda_scs_manager.git` with the `3.x` branch checked out and tracking `origin/3.x`. The production image takes the release instead (`SODA_SCS_MANAGER_VERSION`). The theme (`web/themes/custom/soda_scs_manager_theme`) is a full clone of `SODA_SCS_MANAGER_THEME_REF`. Fetches use HTTPS without keys; `git push` goes over SSH (`git@git.drupal.org:`, `git@github.com:`), so mount your SSH key to push.
 
 Put a named volume on each path so branches and uncommitted work survive container recreation and image pulls. Docker seeds an empty named volume from the image once; later image updates do not touch it, so update the clones with git. Or bind-mount an existing clone from the host instead.
 
@@ -406,7 +406,8 @@ Build arguments:
 |----------|---------|---------|
 | `MODE` | `production` | `production` or `development` |
 | `DRUPAL_IMAGE` | `11.4-php8.5-fpm-bookworm` | Tag of the official `drupal` base image |
-| `SODA_SCS_MANAGER_VERSION` | `^3.1` | Composer constraint for `drupal/soda_scs_manager` |
+| `SODA_SCS_MANAGER_VERSION` | `^3.1` | Composer constraint for `drupal/soda_scs_manager` (production) |
+| `SODA_SCS_MANAGER_DEV_VERSION` | `3.x-dev` | Branch of `drupal/soda_scs_manager` checked out in the development image |
 | `SODA_SCS_MANAGER_THEME_REF` | `1.x` | Branch or tag of `soda_scs_manager_theme` |
 | `PHPREDIS_VERSION` | `6.3.0` | phpredis release tag, built from GitHub |
 | `COLORBOX_LIBRARY_VERSION` | `1.7.0` | Colorbox JS library for the colorbox module |
