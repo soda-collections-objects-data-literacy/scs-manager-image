@@ -16,6 +16,8 @@ env:
   SODA_SCS_MANAGER_VERSION: "^4.0"
   # Development image checks out this branch (composer: 4.x-dev).
   SODA_SCS_MANAGER_DEV_VERSION: "4.x-dev"
+  # Default frontend theme (public repo soda-collections-objects-data-literacy/scs_custom_theme).
+  SCS_CUSTOM_THEME_REF: main
 
 jobs:
   build:
@@ -75,6 +77,7 @@ jobs:
             MODE=${{ matrix.mode }}
             SODA_SCS_MANAGER_VERSION=${{ env.SODA_SCS_MANAGER_VERSION }}
             SODA_SCS_MANAGER_DEV_VERSION=${{ env.SODA_SCS_MANAGER_DEV_VERSION }}
+            SCS_CUSTOM_THEME_REF=${{ env.SCS_CUSTOM_THEME_REF }}
           platforms: ${{ env.PLATFORMS }}
           pull: true
           push: true

@@ -86,6 +86,39 @@ update_database_if_packages_changed() {
   fi
 }
 
+# Frontend theme. Sites installed before the theme was in the image keep their
+# default; this only enables the theme once the code is present.
+ensure_custom_theme() {
+  if [ ! -f /opt/drupal/web/themes/custom/scs_custom_theme/scs_custom_theme.info.yml ]; then
+    echo -e "\033[0;31mWARNING: scs_custom_theme is not in the image.\033[0m"
+    return 0
+  fi
+  if ! drush pm:list --status=enabled --type=theme --field=name 2>/dev/null | grep -qx scs_custom_theme; then
+    echo "Enabling scs_custom_theme..."
+    drush theme:enable scs_custom_theme -y && drush cr
+  fi
+}
+
+# These ship in the image. Older sites were installed before they were enabled.
+ensure_shipped_modules() {
+  local enabled missing=() module
+  enabled="$(drush pm:list --status=enabled --type=module --field=name 2>/dev/null || true)"
+  for module in antibot simple_menu_permissions token_filter; do
+    if [ ! -f "/opt/drupal/web/modules/contrib/${module}/${module}.info.yml" ]; then
+      echo -e "\033[0;31mWARNING: ${module} is not in the image.\033[0m"
+      continue
+    fi
+    if ! printf '%s\n' "${enabled}" | grep -qx "${module}"; then
+      missing+=("${module}")
+    fi
+  done
+  if [ "${#missing[@]}" -eq 0 ]; then
+    return 0
+  fi
+  echo "Enabling ${missing[*]}..."
+  drush en "${missing[@]}" -y && drush cr
+}
+
 # Redis cache backend. settings.php includes the image's Redis settings once;
 # sites from older images lack the include (theirs pointed at a
 # settings.redis.php that never existed). The redis module is enabled once.
@@ -138,12 +171,13 @@ if [ ! -f "${SETTINGS_FILE}" ]; then
     --account-pass="${DRUPAL_PASSWORD}"
 
   echo "Enabling modules..."
-  # Enable companion theme first (hard dependency of soda_scs_manager), then modules
-  drush theme:enable soda_scs_manager_theme gin -y
-  drush config:set system.theme default soda_scs_manager_theme -y
+  # scs_custom_theme is the frontend theme. soda_scs_manager_theme stays
+  # enabled for sites whose config still references it. Gin is the admin theme.
+  drush theme:enable scs_custom_theme soda_scs_manager_theme gin -y
+  drush config:set system.theme default scs_custom_theme -y
   drush config:set system.theme admin gin -y
   # devel must never run in production.
-  modules=(admin_toolbar book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block entity_update field_group health_check imce language languageicons layout_builder layout_discovery linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager single_content_sync smtp svg_image token)
+  modules=(admin_toolbar antibot book book_tree_menu ckeditor_font config_translation contact content_entity_sync content_translation custom_book_block entity_update field_group health_check imce language languageicons layout_builder layout_discovery linkit locale media media_library openid_connect pathauto pfdp soda_scs_manager simple_menu_permissions single_content_sync smtp svg_image token token_filter)
   if is_development; then
     modules+=(devel)
   fi
@@ -202,6 +236,8 @@ EOF
 else
   echo "Site already installed"
   update_database_if_packages_changed
+  ensure_custom_theme
+  ensure_shipped_modules
   ensure_redis_cache
 fi
 

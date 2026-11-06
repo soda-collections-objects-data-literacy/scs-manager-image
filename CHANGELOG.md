@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- The image installs `antibot` (`drupal/antibot:^2.0`) and enables `antibot`, `simple_menu_permissions`, and `token_filter`. `simple_menu_permissions` and `token_filter` were already Composer packages but never enabled. An already installed site gets the three enabled on start when they were missing.
+- Production and development images include `scs_custom_theme` (`SCS_CUSTOM_THEME_REF`, default `main`) from `https://github.com/soda-collections-objects-data-literacy/scs_custom_theme`. The build clones it over HTTPS. Production drops `.git`; development keeps a full clone. First install sets it as the default theme. Gin stays the admin theme. An already installed site gets the theme enabled on start when it was missing.
+
 ### Changed
 
 - Production installs `drupal/soda_scs_manager` at `^4.0` (`SODA_SCS_MANAGER_VERSION`): the 4.0 release line, without a patch pin. The development image checks out the `4.x` branch (`SODA_SCS_MANAGER_DEV_VERSION=4.x-dev`). The image workflow passes both as build args from its env.

@@ -172,6 +172,7 @@ RUN set -eux; \
     fi; \
     composer require --no-interaction --no-progress \
     'drupal/admin_toolbar:^3.6' \
+    'drupal/antibot:^2.0' \
     'drupal/book:^2.0' \
     'drupal/book_tree_menu:^3.0' \
     'drupal/bootstrap5:^4.0' \
@@ -222,6 +223,26 @@ RUN set -eux; \
     find /opt/drupal -xdev ! -type l ! -perm -g=w -not -path '*/node_modules/*' -exec chmod g+w {} +; \
     find /opt/drupal -xdev -type d -exec chmod g+s {} +; \
     fi
+
+# Default frontend theme. Public repo, same pattern as soda_scs_manager_theme:
+# production drops .git, development keeps a full clone.
+ARG SCS_CUSTOM_THEME_REF=main
+RUN set -eux; \
+    cd /opt/drupal; \
+    if [ "$MODE" = "development" ]; then \
+    umask 002; \
+    fi; \
+    themeDir=web/themes/custom/scs_custom_theme; \
+    if [ "$MODE" = "development" ]; then \
+    git clone --branch "${SCS_CUSTOM_THEME_REF}" https://github.com/soda-collections-objects-data-literacy/scs_custom_theme.git "${themeDir}"; \
+    chgrp -R www-data "${themeDir}"; \
+    find "${themeDir}" -xdev ! -type l ! -perm -g=w -exec chmod g+w {} +; \
+    find "${themeDir}" -xdev -type d -exec chmod g+s {} +; \
+    else \
+    git clone --depth 1 --branch "${SCS_CUSTOM_THEME_REF}" https://github.com/soda-collections-objects-data-literacy/scs_custom_theme.git "${themeDir}"; \
+    rm -rf "${themeDir}/.git"; \
+    fi; \
+    test -f "${themeDir}/scs_custom_theme.info.yml"
 
 # JS libraries for the colorbox module (web/libraries/colorbox and
 # web/libraries/dompurify). GitHub archive downloads fail now and then; retry.
