@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.0` (`SODA_SCS_MANAGER_VERSION`): the 4.0 release line, without a patch pin. The development image checks out the `4.x` branch (`SODA_SCS_MANAGER_DEV_VERSION=4.x-dev`). The image workflow passes both as build args from its env.
+
 ## 3.2.0
 
 ### Added

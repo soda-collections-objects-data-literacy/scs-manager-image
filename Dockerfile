@@ -151,11 +151,11 @@ COPY --from=builder /usr/local/etc/php/conf.d/docker-php-ext-*.ini /usr/local/et
 #   www-data.
 
 # SODa SCS Manager from Drupal.org (https://www.drupal.org/project/soda_scs_manager):
-# production takes the release, development the 3.x branch (git checkout on
-# the branch, so work starts on top of it). The companion theme is not on
-# Drupal.org yet.
-ARG SODA_SCS_MANAGER_VERSION=^3.1
-ARG SODA_SCS_MANAGER_DEV_VERSION=3.x-dev
+# production takes the 4.0 release line (no patch pin), development the 4.x
+# branch (git checkout, so work starts on top of it). The companion theme is
+# not on Drupal.org yet. The GitHub workflow sets both from its env.
+ARG SODA_SCS_MANAGER_VERSION=^4.0
+ARG SODA_SCS_MANAGER_DEV_VERSION=4.x-dev
 ARG SODA_SCS_MANAGER_THEME_REF=1.x
 
 # Drupal packages + SODa SCS Manager from packages.drupal.org. devel stays in

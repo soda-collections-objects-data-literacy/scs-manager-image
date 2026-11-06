@@ -11,6 +11,11 @@ env:
   REGISTRY: ghcr.io
   PLATFORMS: linux/amd64,linux/arm64
   CONTEXT_DIRECTORY: .
+  # Composer constraint for the stable image. ^4.0 tracks the 4.0 line
+  # without pinning a patch (4.0.0, 4.0.1, …).
+  SODA_SCS_MANAGER_VERSION: "^4.0"
+  # Development image checks out this branch (composer: 4.x-dev).
+  SODA_SCS_MANAGER_DEV_VERSION: "4.x-dev"
 
 jobs:
   build:
@@ -68,6 +73,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             MODE=${{ matrix.mode }}
+            SODA_SCS_MANAGER_VERSION=${{ env.SODA_SCS_MANAGER_VERSION }}
+            SODA_SCS_MANAGER_DEV_VERSION=${{ env.SODA_SCS_MANAGER_DEV_VERSION }}
           platforms: ${{ env.PLATFORMS }}
           pull: true
           push: true
