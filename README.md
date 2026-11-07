@@ -248,12 +248,12 @@ On the first startup, the entrypoint script will:
 4. Enable `scs_custom_theme` as the default theme and Gin as the admin theme. `soda_scs_manager_theme` stays enabled. An installed site enables `scs_custom_theme` on a later start when it was missing; the default theme of that site stays as it is.
 5. Add German language support
 6. Import configuration from `/opt/drupal/sync/configs`
-7. Import default content for the SCS Manager module
+7. Import the home page and legal pages shipped in `scs_custom_theme/content/sync`
 8. Set file permissions: the sites volume belongs to `www-data`, `settings.php` is read-only
 
 This process may take 2-5 minutes. Subsequent startups are instant.
 
-On later starts of an installed site, the entrypoint runs `drush updatedb` and `drush cr` once whenever the image ships a different package set (fingerprint of its `composer.lock`, compared with `web/sites/.scs-packages-version`). A failed update is retried on the next start.
+On later starts of an installed site, the entrypoint runs `drush updatedb` and `drush cr` once whenever the image ships a different package set (fingerprint of its `composer.lock`, compared with `web/sites/.scs-packages-version`). It also imports the shipped pages again when `content/sync` changed (`web/sites/.scs-content-version`). A failed update or import is retried on the next start.
 
 ## Running Drush Commands
 

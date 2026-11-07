@@ -11,6 +11,9 @@ REDIS_SETTINGS_FILE="/var/configs/redis.settings.php"
 # installed or updated with (on the sites volume).
 IMAGE_PACKAGES_VERSION_FILE="/opt/drupal/.scs-packages-version"
 SITE_PACKAGES_VERSION_FILE="/opt/drupal/web/sites/.scs-packages-version"
+CONTENT_SYNC_DIR="/opt/drupal/web/themes/custom/scs_custom_theme/content/sync"
+CONTENT_IMPORT_SCRIPT="/opt/drupal/web/themes/custom/scs_custom_theme/content/import.php"
+SITE_CONTENT_VERSION_FILE="/opt/drupal/web/sites/.scs-content-version"
 
 # Entrypoint Drush must not pay Xdebug overhead. PHP-FPM is started later and
 # does not inherit this function, so IDE debugging still works.
@@ -83,6 +86,38 @@ update_database_if_packages_changed() {
     echo "Database updates applied."
   else
     echo -e "\033[0;31mERROR: drush updatedb failed; the site may not work until the updates run.\033[0m"
+  fi
+}
+
+# Hash of the shipped pages. Stored on the sites volume so a recreated
+# container imports again only when the image contains different content.
+content_fingerprint() {
+  if [ ! -d "${CONTENT_SYNC_DIR}" ]; then
+    echo missing
+    return 0
+  fi
+  find "${CONTENT_SYNC_DIR}" -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1
+}
+
+# Create or update the home page and legal pages from the theme in this image.
+# single_content_sync matches on UUID, so a repeated import updates in place.
+import_shipped_content_if_changed() {
+  local image site
+  if [ ! -f "${CONTENT_IMPORT_SCRIPT}" ]; then
+    echo -e "\033[0;31mWARNING: shipped content import is not in the image.\033[0m"
+    return 0
+  fi
+  image="$(content_fingerprint)"
+  site="$(cat "${SITE_CONTENT_VERSION_FILE}" 2>/dev/null || echo unknown)"
+  if [ "${image}" = "${site}" ]; then
+    return 0
+  fi
+  echo "Shipped content changed (${site} -> ${image}); importing..."
+  if drush php:script "${CONTENT_IMPORT_SCRIPT}"; then
+    echo "${image}" > "${SITE_CONTENT_VERSION_FILE}"
+    echo "Shipped content imported."
+  else
+    echo -e "\033[0;31mERROR: shipped content import failed; the next start tries again.\033[0m"
   fi
 }
 
@@ -193,13 +228,10 @@ if [ ! -f "${SETTINGS_FILE}" ]; then
   # Single content sync package directory (composer installs module under contrib/)
   echo "\$settings['content_sync_directory'] = 'modules/contrib/soda_scs_manager/content/sync';" >> "${SETTINGS_FILE}"
 
-  echo "Importing contents and configs..."
+  echo "Importing configs and shipped pages..."
   # Import configurations
   drush config:import --partial --source=/opt/drupal/sync/configs -y
-  drush content_entity_sync:import node --bundle=application,book,page
-  drush content_entity_sync:import media --bundle=image
-  drush content_entity_sync:import menu_link_content
-  drush config:set system.site page.front /home -y
+  import_shipped_content_if_changed
   if [ -f /opt/drupal/sync/configs/openid_connect.client.scs_sso.yml ]; then
     drush config:import /opt/drupal/sync/configs/openid_connect.client.scs_sso.yml -y
   fi
@@ -237,6 +269,7 @@ else
   echo "Site already installed"
   update_database_if_packages_changed
   ensure_custom_theme
+  import_shipped_content_if_changed
   ensure_shipped_modules
   ensure_redis_cache
 fi

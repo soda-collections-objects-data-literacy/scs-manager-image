@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 3.3.0 - 2026-11-07
+
 ### Added
 
 - The image installs `antibot` (`drupal/antibot:^2.0`) and enables `antibot`, `simple_menu_permissions`, and `token_filter`. `simple_menu_permissions` and `token_filter` were already Composer packages but never enabled. An already installed site gets the three enabled on start when they were missing.
@@ -10,6 +12,16 @@
 ### Changed
 
 - Production installs `drupal/soda_scs_manager` at `^4.0` (`SODA_SCS_MANAGER_VERSION`): the 4.0 release line, without a patch pin. The development image checks out the `4.x` branch (`SODA_SCS_MANAGER_DEV_VERSION=4.x-dev`). The image workflow passes both as build args from its env.
+- Contrib floors follow the current compatible releases: Linkit `^7.0.17`, OpenID Connect `^3.0.0-alpha9@alpha`, SVG Image `^3.2.5`, Token `^1.18`. Later patch releases on the same line still install. `core-recipe-unpack` is required explicitly so it moves with the other core metapackages.
+- The entrypoint imports the home page and legal pages from `scs_custom_theme/content/sync` when that tree differs from the last import (`web/sites/.scs-content-version`). The same import runs on first install. A failed import is retried on the next start.
+
+### Removed
+
+- `drupal/bootstrap5`. The theme is not enabled.
+
+### Security
+
+- Drupal core metapackages are required at `^11.4.12` (security release 11.4.10, recommended 11.4.12). `drupal/externalauth` is a direct requirement at `^2.0.15` (security release 2.0.13). `drupal/single_content_sync` is `^1.4.19`. Gin is `^5.0.16`. A build can no longer resolve the vulnerable releases.
 
 ## 3.2.0
 

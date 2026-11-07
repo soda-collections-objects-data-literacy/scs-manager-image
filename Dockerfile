@@ -175,38 +175,39 @@ RUN set -eux; \
     'drupal/antibot:^2.0' \
     'drupal/book:^2.0' \
     'drupal/book_tree_menu:^3.0' \
-    'drupal/bootstrap5:^4.0' \
     'drupal/ckeditor5_plugin_pack:^1.5' \
     'drupal/ckeditor_font:^2.0@beta' \
     'drupal/colorbox:^2.2' \
     'drupal/content_entity_sync:^2.3' \
-    'drupal/core-composer-scaffold:^11.4' \
-    'drupal/core-project-message:^11.4' \
-    'drupal/core-recommended:^11.4' \
+    'drupal/core-composer-scaffold:^11.4.12' \
+    'drupal/core-project-message:^11.4.12' \
+    'drupal/core-recipe-unpack:^11.4.12' \
+    'drupal/core-recommended:^11.4.12' \
     'drupal/custom_book_block:^2.0' \
     'drupal/devel:^5.3' \
     'drupal/entity_update:^3.0' \
     'drupal/eu_cookie_compliance:^1.29' \
+    'drupal/externalauth:^2.0.15' \
     'drupal/field_group:^4.0' \
-    'drupal/gin:^5.0' \
+    'drupal/gin:^5.0.16' \
     'drupal/health_check:^3.1' \
     'drupal/image_effects:^5.0' \
     'drupal/imagemagick:^5.0' \
     'drupal/imce:^3.1' \
     'drupal/languageicons:^2.0@beta' \
-    'drupal/linkit:^7.0' \
+    'drupal/linkit:^7.0.17' \
     'drupal/nextcloud_webdav_mount:^1.1' \
-    'drupal/openid_connect:^3.0@alpha' \
+    'drupal/openid_connect:^3.0.0-alpha9@alpha' \
     'drupal/paragraphs:^1.20' \
     'drupal/pathauto:^1.13' \
     'drupal/private_files_download_permission:^3.1' \
     'drupal/redis:^1.11' \
     'drupal/simple_menu_permissions:^3.0' \
-    'drupal/single_content_sync:^1.4' \
+    'drupal/single_content_sync:^1.4.19' \
     'drupal/smtp:^1.4' \
     "drupal/soda_scs_manager:${moduleConstraint}" \
-    'drupal/svg_image:^3.2' \
-    'drupal/token:^1.17' \
+    'drupal/svg_image:^3.2.5' \
+    'drupal/token:^1.18' \
     'drupal/token_filter:^2.2' \
     'drush/drush:^13.5'; \
     themeDir=web/themes/custom/soda_scs_manager_theme; \
