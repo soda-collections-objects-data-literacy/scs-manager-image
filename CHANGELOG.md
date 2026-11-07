@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 3.3.0 - 2026-11-07
+## 3.3.1 - 2026-11-07
 
 ### Added
 
@@ -19,9 +19,17 @@
 
 - `drupal/bootstrap5`. The theme is not enabled.
 
+### Fixed
+
+- The image build updates `drupal/core` together with the core metapackages (`composer require --with-all-dependencies`, and `drupal/core` listed explicitly). 3.3.0 failed here: the base image lock kept core at 11.4.11, so core-recommended 11.4.12 could not be installed. No 3.3.0 image was published.
+
 ### Security
 
 - Drupal core metapackages are required at `^11.4.12` (security release 11.4.10, recommended 11.4.12). `drupal/externalauth` is a direct requirement at `^2.0.15` (security release 2.0.13). `drupal/single_content_sync` is `^1.4.19`. Gin is `^5.0.16`. A build can no longer resolve the vulnerable releases.
+
+## 3.3.0 - 2026-11-07 [YANKED]
+
+The tag exists. The image build failed before publishing, for the reason fixed in 3.3.1. No image was published.
 
 ## 3.2.0
 

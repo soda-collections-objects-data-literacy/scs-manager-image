@@ -170,7 +170,10 @@ RUN set -eux; \
     composer config preferred-install.drupal/soda_scs_manager source; \
     moduleConstraint="${SODA_SCS_MANAGER_DEV_VERSION}@dev"; \
     fi; \
-    composer require --no-interaction --no-progress \
+    # --with-all-dependencies moves packages the base image locks, above all
+    # drupal/core. A partial update otherwise keeps the lock (11.4.11) and
+    # refuses core-recommended 11.4.12.
+    composer require --no-interaction --no-progress --with-all-dependencies \
     'drupal/admin_toolbar:^3.6' \
     'drupal/antibot:^2.0' \
     'drupal/book:^2.0' \
@@ -179,6 +182,7 @@ RUN set -eux; \
     'drupal/ckeditor_font:^2.0@beta' \
     'drupal/colorbox:^2.2' \
     'drupal/content_entity_sync:^2.3' \
+    'drupal/core:^11.4.12' \
     'drupal/core-composer-scaffold:^11.4.12' \
     'drupal/core-project-message:^11.4.12' \
     'drupal/core-recipe-unpack:^11.4.12' \
