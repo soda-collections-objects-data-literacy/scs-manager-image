@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The rolling development line is `main` (image tag `:main`); the `3.x` branch is retired. Stable releases stay plain version tags. A `X.x` branch is only cut from a release tag to maintain an older major.
+
 ## 3.3.1 - 2026-11-07
 
 ### Added

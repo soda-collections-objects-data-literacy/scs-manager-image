@@ -19,7 +19,7 @@ One Dockerfile builds two images; the `MODE` build argument selects which.
 | `ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-production` | `production` | Running SCS Manager. No Xdebug, no dev Composer packages, OPcache without file re-stat, devel not enabled, NGINX logs only errors. |
 | `ghcr.io/soda-collections-objects-data-literacy/scs-manager-image-development` | `development` | Working on SCS Manager and its theme. Xdebug, PHPUnit, PHPStan, PHP_CodeSniffer, CSpell, Node.js, a `developer` user, and the module and theme as git checkouts. See [Development Image](#development-image). |
 
-Tags: `latest` (newest release), `<major>`, `<major>.<minor>`, `<version>`, the branch name (`3.x`) and `sha-<commit>`.
+Tags: `latest` (newest release), `<major>`, `<major>.<minor>`, `<version>`, the branch name (`main` for the rolling development line, `X.x` for a maintained older major) and `sha-<commit>`.
 
 ## Features
 
