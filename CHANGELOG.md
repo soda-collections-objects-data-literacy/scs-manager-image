@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 3.3.3 - 2026-11-09
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.1` (`SODA_SCS_MANAGER_VERSION`, also in the image workflow). 4.1.0 adds the WissKI "Admin tasks" panel and the "Update" button for SCS administrators and drops the "WissKI 8.x-4.x Development" option. The entrypoint runs its database update 11037 on start.
+
 ## 3.3.2 - 2026-11-09
 
 ### Fixed

@@ -13,9 +13,9 @@ env:
   REGISTRY: ghcr.io
   PLATFORMS: linux/amd64,linux/arm64
   CONTEXT_DIRECTORY: .
-  # Composer constraint for the stable image. ^4.0 tracks the 4.0 line
-  # without pinning a patch (4.0.0, 4.0.1, …).
-  SODA_SCS_MANAGER_VERSION: "^4.0"
+  # Composer constraint for the stable image. ^4.1 takes the newest 4.x
+  # release from 4.1.0 on, without pinning a patch.
+  SODA_SCS_MANAGER_VERSION: "^4.1"
   # Development image checks out this branch (composer: 4.x-dev).
   SODA_SCS_MANAGER_DEV_VERSION: "4.x-dev"
   # Default frontend theme (public repo soda-collections-objects-data-literacy/scs_custom_theme).

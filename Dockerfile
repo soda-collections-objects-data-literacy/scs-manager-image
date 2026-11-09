@@ -155,7 +155,7 @@ COPY --from=builder /usr/local/etc/php/conf.d/docker-php-ext-*.ini /usr/local/et
 # production takes the 4.0 release line (no patch pin), development the 4.x
 # branch (git checkout, so work starts on top of it). The companion theme is
 # not on Drupal.org yet. The GitHub workflow sets both from its env.
-ARG SODA_SCS_MANAGER_VERSION=^4.0
+ARG SODA_SCS_MANAGER_VERSION=^4.1
 ARG SODA_SCS_MANAGER_DEV_VERSION=4.x-dev
 ARG SODA_SCS_MANAGER_THEME_REF=1.x
 

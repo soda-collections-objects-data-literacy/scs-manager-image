@@ -8,7 +8,7 @@ This Docker image provides a pre-configured Drupal 11 installation with the SODa
 
 **Base Image:** `drupal:11.4-php8.5-fpm-bookworm`
 
-**SCS Manager:** [`drupal/soda_scs_manager:^4.0`](https://www.drupal.org/project/soda_scs_manager) via Composer (Drupal.org). The development image checks out the `4.x` branch.
+**SCS Manager:** [`drupal/soda_scs_manager:^4.1`](https://www.drupal.org/project/soda_scs_manager) via Composer (Drupal.org). The development image checks out the `4.x` branch.
 
 ## Images
 
@@ -25,7 +25,7 @@ Tags: `latest` (newest release), `<major>`, `<major>.<minor>`, `<version>`, the 
 
 - **Drupal 11.4** with PHP 8.5, NGINX, and PHP-FPM on Debian Bookworm
 - **Pre-installed modules:**
-  - [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) (`drupal/soda_scs_manager:^4.0` from packages.drupal.org; `4.x-dev` in the development image)
+  - [SODa SCS Manager](https://www.drupal.org/project/soda_scs_manager) (`drupal/soda_scs_manager:^4.1` from packages.drupal.org; `4.x-dev` in the development image)
   - Default frontend theme `scs_custom_theme` (Git clone, `SCS_CUSTOM_THEME_REF`, default `main`)
   - Companion theme `soda_scs_manager_theme` (Git clone until published on Drupal.org)
   - Admin Toolbar, Gin admin theme, Devel (enabled in the development image only)
@@ -303,7 +303,7 @@ The lint and test tools sit in the site's `vendor/`, the same layout as the Drup
 
 ### Module and theme as git checkouts
 
-`soda_scs_manager` (`web/modules/contrib/soda_scs_manager`) is installed from source as `4.x-dev` (`SODA_SCS_MANAGER_DEV_VERSION`): a git clone of `https://git.drupalcode.org/project/soda_scs_manager.git` with the `4.x` branch checked out and tracking `origin/4.x`. The production image takes the release line instead (`SODA_SCS_MANAGER_VERSION`, `^4.0`). `soda_scs_manager_theme` (`web/themes/custom/soda_scs_manager_theme`) is a full clone of `SODA_SCS_MANAGER_THEME_REF`. The default theme `scs_custom_theme` (`web/themes/custom/scs_custom_theme`) is a full clone of `SCS_CUSTOM_THEME_REF`. Fetches use HTTPS without keys; `git push` goes over SSH (`git@git.drupal.org:`, `git@github.com:`), so mount your SSH key to push.
+`soda_scs_manager` (`web/modules/contrib/soda_scs_manager`) is installed from source as `4.x-dev` (`SODA_SCS_MANAGER_DEV_VERSION`): a git clone of `https://git.drupalcode.org/project/soda_scs_manager.git` with the `4.x` branch checked out and tracking `origin/4.x`. The production image takes the release line instead (`SODA_SCS_MANAGER_VERSION`, `^4.1`). `soda_scs_manager_theme` (`web/themes/custom/soda_scs_manager_theme`) is a full clone of `SODA_SCS_MANAGER_THEME_REF`. The default theme `scs_custom_theme` (`web/themes/custom/scs_custom_theme`) is a full clone of `SCS_CUSTOM_THEME_REF`. Fetches use HTTPS without keys; `git push` goes over SSH (`git@git.drupal.org:`, `git@github.com:`), so mount your SSH key to push.
 
 Put a named volume on each path so branches and uncommitted work survive container recreation and image pulls. Docker seeds an empty named volume from the image once; later image updates do not touch it, so update the clones with git. Or bind-mount an existing clone from the host instead.
 
@@ -409,7 +409,7 @@ Build arguments:
 |----------|---------|---------|
 | `MODE` | `production` | `production` or `development` |
 | `DRUPAL_IMAGE` | `11.4-php8.5-fpm-bookworm` | Tag of the official `drupal` base image |
-| `SODA_SCS_MANAGER_VERSION` | `^4.0` | Composer constraint for `drupal/soda_scs_manager` (production). `^4.0` tracks the 4.0 line without a patch pin. |
+| `SODA_SCS_MANAGER_VERSION` | `^4.1` | Composer constraint for `drupal/soda_scs_manager` (production). `^4.1` takes the newest 4.x release from 4.1.0 on. |
 | `SODA_SCS_MANAGER_DEV_VERSION` | `4.x-dev` | Branch of `drupal/soda_scs_manager` checked out in the development image (`4.x`) |
 | `SODA_SCS_MANAGER_THEME_REF` | `1.x` | Branch or tag of `soda_scs_manager_theme` |
 | `SCS_CUSTOM_THEME_REF` | `main` | Branch or tag of `scs_custom_theme` (default frontend theme) |
@@ -424,13 +424,13 @@ PHP extensions compile in a builder stage; the runtime image gets the extensions
 ```bash
 docker build \
   --build-arg MODE=production \
-  --build-arg SODA_SCS_MANAGER_VERSION=^4.0 \
+  --build-arg SODA_SCS_MANAGER_VERSION=^4.1 \
   --build-arg SODA_SCS_MANAGER_THEME_REF=1.x \
   --build-arg SCS_CUSTOM_THEME_REF=main \
   -t scs-manager-image-production:local .
 ```
 
-Default: `SODA_SCS_MANAGER_VERSION=^4.0` and `SODA_SCS_MANAGER_DEV_VERSION=4.x-dev`. The publish workflow sets the same values from its `env` block.
+Default: `SODA_SCS_MANAGER_VERSION=^4.1` and `SODA_SCS_MANAGER_DEV_VERSION=4.x-dev`. The publish workflow sets the same values from its `env` block.
 
 ## Updating the Image
 
