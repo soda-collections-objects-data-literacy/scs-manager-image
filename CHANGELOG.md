@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 3.3.4 - 2026-11-09
+
+### Fixed
+
+- The shipped content import failed with "The imported file extension is not allowed" because the pages reference SVG logos. The entrypoint now adds `svg` to the allowed file extensions of Single Content Sync before the import.
+
 ## 3.3.3 - 2026-11-09
 
 ### Changed

@@ -113,6 +113,8 @@ import_shipped_content_if_changed() {
     return 0
   fi
   echo "Shipped content changed (${site} -> ${image}); importing..."
+  # The shipped pages reference SVG logos; the module default does not allow svg.
+  drush php:eval '$c = \Drupal::configFactory()->getEditable("single_content_sync.settings"); $e = preg_split("/\s+/", trim((string) $c->get("allowed_file_extensions")), -1, PREG_SPLIT_NO_EMPTY); if (!in_array("svg", $e, TRUE)) { $e[] = "svg"; $c->set("allowed_file_extensions", implode(" ", $e))->save(); echo "Allowed svg in single_content_sync.\n"; }'
   if drush php:script "${CONTENT_IMPORT_SCRIPT}"; then
     echo "${image}" > "${SITE_CONTENT_VERSION_FILE}"
     echo "Shipped content imported."
