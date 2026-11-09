@@ -101,6 +101,7 @@ RUN set -eux; \
     libicu72 \
     libjpeg62-turbo \
     libpng16-16 \
+    librsvg2-bin \
     libwebp7 \
     nginx \
     sendmail \

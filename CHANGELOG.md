@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 3.3.2 - 2026-11-09
+
+### Fixed
+
+- Install `librsvg2-bin` so ImageMagick can read SVG files (`rsvg-convert` delegate). Without it `identify` failed on SVG logos, e.g. during `drush updb`.
+
 ### Changed
 
 - The rolling development line is `main` (image tag `:main`); the `3.x` branch is retired. Stable releases stay plain version tags. A `X.x` branch is only cut from a release tag to maintain an older major.
