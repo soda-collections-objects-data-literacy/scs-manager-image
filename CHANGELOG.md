@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 3.4.1 - 2026-11-10
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.3.1
+  (German translation file valid again; Gin status field PHP 8.5 fix on
+  non-node Views such as People).
+
 ## 3.4.0 - 2026-11-10
 
 ### Changed
