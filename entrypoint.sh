@@ -208,9 +208,8 @@ if [ ! -f "${SETTINGS_FILE}" ]; then
     --account-pass="${DRUPAL_PASSWORD}"
 
   echo "Enabling modules..."
-  # scs_custom_theme is the frontend theme. soda_scs_manager_theme stays
-  # enabled for sites whose config still references it. Gin is the admin theme.
-  drush theme:enable scs_custom_theme soda_scs_manager_theme gin -y
+  # scs_custom_theme is the frontend theme, Gin the admin theme.
+  drush theme:enable scs_custom_theme gin -y
   drush config:set system.theme default scs_custom_theme -y
   drush config:set system.theme admin gin -y
   # devel must never run in production.

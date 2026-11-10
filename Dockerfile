@@ -153,16 +153,16 @@ COPY --from=builder /usr/local/etc/php/conf.d/docker-php-ext-*.ini /usr/local/et
 
 # SODa SCS Manager from Drupal.org (https://www.drupal.org/project/soda_scs_manager):
 # production takes the 4.0 release line (no patch pin), development the 4.x
-# branch (git checkout, so work starts on top of it). The companion theme is
-# not on Drupal.org yet. The GitHub workflow sets both from its env.
-ARG SODA_SCS_MANAGER_VERSION=^4.1
+# branch (git checkout, so work starts on top of it). The GitHub workflow sets
+# both from its env. 4.3.0 is the first release that ships its own CSS; older
+# releases need the retired soda_scs_manager_theme, which the image no longer has.
+ARG SODA_SCS_MANAGER_VERSION=^4.3
 ARG SODA_SCS_MANAGER_DEV_VERSION=4.x-dev
-ARG SODA_SCS_MANAGER_THEME_REF=1.x
 
 # Drupal packages + SODa SCS Manager from packages.drupal.org. devel stays in
 # the codebase for sites that enabled it before, but only development
-# installs enable it. Development installs soda_scs_manager and the theme as
-# git checkouts so they can be worked on in place.
+# installs enable it. Development installs soda_scs_manager as a git checkout
+# so it can be worked on in place.
 RUN set -eux; \
     cd /opt/drupal; \
     moduleConstraint="${SODA_SCS_MANAGER_VERSION}"; \
@@ -215,13 +215,6 @@ RUN set -eux; \
     'drupal/token:^1.18' \
     'drupal/token_filter:^2.2' \
     'drush/drush:^13.5'; \
-    themeDir=web/themes/custom/soda_scs_manager_theme; \
-    if [ "$MODE" = "development" ]; then \
-    git clone --branch "${SODA_SCS_MANAGER_THEME_REF}" https://github.com/rnsrk/soda_scs_manager_theme.git "${themeDir}"; \
-    else \
-    git clone --depth 1 --branch "${SODA_SCS_MANAGER_THEME_REF}" https://github.com/rnsrk/soda_scs_manager_theme.git "${themeDir}"; \
-    rm -rf "${themeDir}/.git"; \
-    fi; \
     composer clear-cache; \
     ln -sf /opt/drupal/vendor/bin/drush /usr/local/bin/drush; \
     if [ "$MODE" = "development" ]; then \
@@ -230,8 +223,8 @@ RUN set -eux; \
     find /opt/drupal -xdev -type d -exec chmod g+s {} +; \
     fi
 
-# Default frontend theme. Public repo, same pattern as soda_scs_manager_theme:
-# production drops .git, development keeps a full clone.
+# Default frontend theme (public repo): production drops .git, development
+# keeps a full clone.
 ARG SCS_CUSTOM_THEME_REF=main
 RUN set -eux; \
     cd /opt/drupal; \

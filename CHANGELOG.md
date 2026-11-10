@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` (`SODA_SCS_MANAGER_VERSION`, also in the image workflow). 4.3.0 is the first release that ships its own CSS. Its update 11039 removes the retired `soda_scs_manager_theme` from an existing site on the next start.
+
+### Removed
+
+- The `soda_scs_manager_theme` clone and the build argument `SODA_SCS_MANAGER_THEME_REF`. A fresh install enables only `scs_custom_theme` and Gin. **Drop a `scs-manager-theme` volume or bind mount** from development compose files.
+
 ## 3.3.4 - 2026-11-09
 
 ### Fixed
