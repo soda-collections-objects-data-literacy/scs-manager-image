@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 3.4.3 - 2026-11-11
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.3.3
+  (empty `machineName` is derived while the form reads the POST, so the Create
+  Project wizard works under JS aggregation with the field still required).
+
 ## 3.4.2 - 2026-11-11
 
 ### Changed
