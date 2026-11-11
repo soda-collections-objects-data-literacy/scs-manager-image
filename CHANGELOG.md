@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 3.4.2 - 2026-11-11
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.3.2
+  (Create Project wizard derives `machineName` on the server when JS
+  aggregation clears the client field).
+
 ## 3.4.1 - 2026-11-10
 
 ### Changed
