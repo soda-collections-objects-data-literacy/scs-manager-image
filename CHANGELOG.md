@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 3.5.0 - 2026-11-12
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.4.0
+  (optional WissKI Default Data Model on create, clearer create failures,
+  WissKI container wait, OpenGDB nullable fix, unknown entity URLs as 404,
+  WSOD without exception message). Theme `scs_custom_theme` drops the
+  exception message from the WSOD template.
+
 ## 3.4.3 - 2026-11-11
 
 ### Changed
