@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 3.7.0 - 2026-11-17
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.6.0
+  (WebProtégé "Import ontology" tab; first revision on create so ontology
+  download and demo template export work). **After updating, run
+  `drush soda_scs_manager:backfill-webprotege-projects --all` once.**
+
 ## 3.6.0 - 2026-11-17
 
 ### Changed
