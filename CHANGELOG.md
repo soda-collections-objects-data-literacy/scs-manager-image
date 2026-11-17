@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 3.6.0 - 2026-11-17
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.5.0
+  (Snapshots card on stack/component detail, admin conversations, demo status
+  panel, service-key owner access, Administer SODa SCS Manager on all entity
+  types, project/account delete batches, OpenGDB grant and token fixes, no
+  module CSS — styles live in `scs_custom_theme`). Theme brings the manager UI
+  styles, conversation theming, and a funding-and-partners section on the home
+  page (shipped content export). **Run `drush updb`** on existing sites
+  (updates 11041–11042). **Update theme and module together.**
+
 ## 3.5.0 - 2026-11-12
 
 ### Changed
