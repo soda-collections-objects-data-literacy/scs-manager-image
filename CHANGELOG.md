@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 3.8.0 - 2026-11-18
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.7.0
+  (orphan resources admin page, team member role controls, confirmation overlays,
+  demo template and triplestore token fixes, session-expiry polling stop). Theme
+  styles the member editor and overlays; shipped menu links for administration
+  and docs are refreshed. **Update theme and module together.** **Build a new
+  demo template version from an installed source WissKI that has the
+  `api-import` account and the role `wisski_api_import`, then activate it, and
+  reset existing demo projects.**
+
 ## 3.7.0 - 2026-11-17
 
 ### Changed
