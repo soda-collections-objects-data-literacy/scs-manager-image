@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 3.8.1 - 2026-11-19
+
 ### Fixed
 
 - Apply a composer patch for `drupal/field_group` so horizontal tabs initialize
