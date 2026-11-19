@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 3.8.2 - 2026-11-19
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.7.1
+  (unit tests for demo template build guards and triplestore owner-token sync).
+
 ## 3.8.1 - 2026-11-19
 
 ### Fixed
