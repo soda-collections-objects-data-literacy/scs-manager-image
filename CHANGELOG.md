@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Apply a composer patch for `drupal/field_group` so horizontal tabs initialize
+  on Drupal >= 10.4 / 11.1 (`weight: -1` no longer loads the JS before jQuery;
+  [field_group#3625536](https://www.drupal.org/project/field_group/issues/3625536)).
+  Drop the patch once upstream ships the fix.
+
 ## 3.8.0 - 2026-11-18
 
 ### Changed

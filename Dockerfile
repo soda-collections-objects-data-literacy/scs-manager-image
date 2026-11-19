@@ -159,6 +159,12 @@ COPY --from=builder /usr/local/etc/php/conf.d/docker-php-ext-*.ini /usr/local/et
 ARG SODA_SCS_MANAGER_VERSION=^4.3
 ARG SODA_SCS_MANAGER_DEV_VERSION=4.x-dev
 
+# field_group horizontal tabs: weight -1 loads JS before jQuery on Drupal
+# >= 10.4 / 11.1 (https://www.drupal.org/project/field_group/issues/3625536).
+# Drop once field_group ships the fix; otherwise composer install fails when
+# the patch no longer applies.
+COPY patches/ /opt/drupal/patches/
+
 # Drupal packages + SODa SCS Manager from packages.drupal.org. devel stays in
 # the codebase for sites that enabled it before, but only development
 # installs enable it. Development installs soda_scs_manager as a git checkout
@@ -171,6 +177,9 @@ RUN set -eux; \
     composer config preferred-install.drupal/soda_scs_manager source; \
     moduleConstraint="${SODA_SCS_MANAGER_DEV_VERSION}@dev"; \
     fi; \
+    composer config allow-plugins.cweagans/composer-patches true; \
+    composer require --no-interaction --no-progress cweagans/composer-patches:^1.7; \
+    php -r '$j=json_decode(file_get_contents("composer.json"), true, 512, JSON_THROW_ON_ERROR); $j["extra"]["patches"]["drupal/field_group"]["Horizontal tabs: drop weight -1, load via dependencies (field_group#3625536)"]="patches/field_group-horizontal-tabs-weight.patch"; file_put_contents("composer.json", json_encode($j, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n");'; \
     # --with-all-dependencies moves packages the base image locks, above all
     # drupal/core. A partial update otherwise keeps the lock (11.4.11) and
     # refuses core-recommended 11.4.12.
