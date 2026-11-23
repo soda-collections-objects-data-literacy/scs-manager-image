@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 3.8.3 - 2026-11-23
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.7.2
+  (demo WissKIs no longer show a second SSO button after a restore).
+
 ## 3.8.2 - 2026-11-19
 
 ### Changed
