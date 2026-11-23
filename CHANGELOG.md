@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 3.9.0 - 2026-11-23
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.8.0
+  (demo source owned by the protected service account `scs_demo`, own URIs
+  for demo WissKIs, export and import of demo versions, project ownership
+  transfer). The module needs Drupal 11.2; the image ships 11.4.
+  **Set `SCS_DEMO_ACCOUNT_PASSWORD` in the deployment `.env`, recreate the
+  manager container and run `drush soda_scs_manager:demo-account`, then choose
+  the demo project again on the demo page.**
+
 ## 3.8.3 - 2026-11-23
 
 ### Changed
