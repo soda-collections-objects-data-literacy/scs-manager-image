@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 3.9.1 - 2026-11-23
+
+### Fixed
+
+- Theme migrates legacy funding and partner logos into the paired fields and
+  sets `field_logos_migrated` without the helper module `scs_theme_content`,
+  so sites that already ran `logo_pairs` (Prime after 3.9.0) can finish
+  `remove_legacy_logo_fields`. Production still installs
+  `drupal/soda_scs_manager` at `^4.3` and picks up 4.8.1 (sliders icon on the
+  SCS Manager administration menu link).
+  **Pull and recreate the manager container; the entrypoint runs
+  `drush updatedb` and completes the logo-field cleanup.**
+
 ## 3.9.0 - 2026-11-23
 
 ### Changed
