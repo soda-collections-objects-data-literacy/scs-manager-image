@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 3.9.2 - 2026-11-25
+
+### Changed
+
+- Production installs `drupal/soda_scs_manager` at `^4.3` and picks up 4.8.2
+  (SCS Manager admins see the Delete and Reset demo controls on every project;
+  members who may not delete a project no longer see its Delete entry).
+
 ## 3.9.1 - 2026-11-23
 
 ### Fixed
