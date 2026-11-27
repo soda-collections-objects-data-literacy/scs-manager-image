@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 3.10.1 - 2026-11-27
+
+### Changed
+
+- Ships SODa SCS Manager module 4.8.3: application detail pages show the SQL
+  and triplestore access data to the owner again, and the create-project wizard
+  is easier to use with the keyboard and screen readers.
+- Theme: the funding and home page content now carries the logo link fields.
+  No action needed; the image bakes the theme content, so rebuilding is enough.
+
 ## 3.10.0 - 2026-11-27
 
 ### Added
