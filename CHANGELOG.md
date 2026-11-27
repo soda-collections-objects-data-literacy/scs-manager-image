@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 3.11.0 - 2026-11-27
+
+### Changed
+
+- Ships SODa SCS Manager module 4.9.0: deleting projects, applications or
+  accounts also removes their Nextcloud groups, and demo project links stay
+  closed until the demo is ready. **After the update, run
+  `drush soda_scs_manager:delete-orphaned-nextcloud-groups` once, check the
+  list, then run it with `--apply`.**
+- Theme: styles for the pending application cards and the Files note of a
+  demo project that is still being set up.
+
 ## 3.10.1 - 2026-11-27
 
 ### Changed
