@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 3.10.0 - 2026-11-27
+
+### Added
+
+- Theme: a styled 404 page for the manager (`page--404.html.twig`).
+- Theme: progress bar styling for the delete-project batch, a throbber overlay
+  and accessibility improvements in the create-project wizard.
+
+### Changed
+
+- Theme: the manager CSS is rebuilt from the SCSS (administration styles
+  consolidated, design comments added). Production keeps installing
+  `drupal/soda_scs_manager` at `^4.3` and picks up 4.8.2.
+  **Pull and recreate the manager container.**
+
 ## 3.9.2 - 2026-11-25
 
 ### Changed
